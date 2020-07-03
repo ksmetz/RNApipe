@@ -33,7 +33,7 @@ Unfortunately the [output structures](#output-parameters) and some other aspects
 1. **Make sure your sample info is entered into the "Sequencing Data" spreadsheet on the lab Google Drive**
 	- Edit *your copy* of the sheet (if you don't have one, ask Katie or [make your own](https://docs.google.com/spreadsheets/d/13dfdyM4HxgsEoFhiuDqrohGfLulVtxYHqSK1dA29Xvw/edit#gid=2031315238))
 	- The [master sheet](https://docs.google.com/spreadsheets/d/14-j6QiyzX4oV378CgQhb6btfaaopbZTRXew1FxN1vag/edit#gid=673528436) should update with your run info automatically once your personal sheet is set up.
-	- <span style="background-color: #ea9999">Pink columns</span> are required. See "Instructions" tab in spreadsheet for more details
+	- <span style="background-color: #ea9999">Pink columns</span> are required (A-N, V-X). See "Instructions" tab in spreadsheet for more details
 
 2. **Make sure the most up-to-date sample sheet is on the cluster.**
 	- The sample sheet lives on the cluster, here:\
@@ -92,7 +92,7 @@ Many RNApipe.py options are used in combination to determine which files from th
 For all options not selected, with the exception of TAG, it will default to picking all available options for the project listed. The <code>--project</code> option is required.
 
 #### Manual samplesheet input
-There is also a <code>--manual</code> (also <code>--MAN</code>, <code>--man</code>, <code>--MANUAL</code>) option that can override the Sequencing Data sheet. You can use this command to point to a different config file, and the program will run on *all* of the samples listed in that file, rather than subsetting the Master sheet. **Unforuntately,** for most reliable results (until Katie gets off her butt and rewrites this entire thing), it is best to format manual sheets after at least columns A-M of the Master Sheet. Additional columns can be added for metadata. 
+There is also a <code>--manual</code> (also <code>--MAN</code>, <code>--man</code>, <code>--MANUAL</code>) option that can override the Sequencing Data sheet. You can use this command to point to a different config file, and the program will run on *all* of the samples listed in that file, rather than subsetting the Master sheet. **Unforuntately,** for most reliable results (until Katie gets off her butt and rewrites this entire thing), it is best to format manual sheets after at least columns A-K and V-X of the Master Sheet. Additional columns can be added for metadata. 
 
 #### Examples
 To run all biological replicates for the project LIMA, you would enter: \
@@ -104,24 +104,23 @@ To run biological reps 2 and 3 (but not 1) of the LIMA project, you could enter:
 Alternatively, to run these samples with a manual sheet, you could make a sheet that looks as follows and run this command: \
 <code>python /proj/phanstiel_lab/software/RNApipe/RNApipe.py --manual mySampleSheet.tsv</code>
 
-| Unique_ID | Name | Project | Cell_Type | Genotype | Condition | Time | Bio_Rep | Tech_Rep | Seq_Rep | Tag |
-|-----------|------|---------|-----------|----------|-----------|------|---------|----------|---------|-----|
-| KR51EBE4	| LIMA_RNA_THP1_WT_LPIF_0000_S_3.1.1	| LIMA	| THP1	| WT	| LPIF	| 0000	| 3	| 1	| 1	| S |
-| KR0A9DF4	| LIMA_RNA_THP1_WT_LPIF_0030_S_3.1.1	| LIMA	| THP1	| WT	| LPIF	| 0030	| 3	| 1	| 1	| S |
-| KR751205	| LIMA_RNA_THP1_WT_LPIF_0060_S_3.1.1	| LIMA	| THP1	| WT	| LPIF	| 0060	| 3	| 1	| 1	| S |
-| KR02C443	| LIMA_RNA_THP1_WT_LPIF_0090_S_3.1.1	| LIMA	| THP1	| WT	| LPIF	| 0090	| 3	| 1	| 1	| S |
-| KR08B759	| LIMA_RNA_THP1_WT_LPIF_0120_S_3.1.1	| LIMA	| THP1	| WT	| LPIF	| 0120	| 3	| 1	| 1	| S |
-| KR365BAB	| LIMA_RNA_THP1_WT_LPIF_0240_S_3.1.1	| LIMA	| THP1	| WT	| LPIF	| 0240	| 3	| 1	| 1	| S |
-| KR8A7D54	| LIMA_RNA_THP1_WT_LPIF_0360_S_3.1.1	| LIMA	| THP1	| WT	| LPIF	| 0360	| 3	| 1	| 1	| S |
-| KR0CE283	| LIMA_RNA_THP1_WT_LPIF_1440_S_3.1.1	| LIMA	| THP1	| WT	| LPIF	| 1440	| 3	| 1	| 1	| S |
-| KR031F3D	| LIMA_RNA_THP1_WT_LPIF_0000_S_2.1.1	| LIMA	| THP1	| WT	| LPIF	| 0000	| 2	| 1	| 1	| S |
-| KR13130A	| LIMA_RNA_THP1_WT_LPIF_0030_S_2.1.1	| LIMA	| THP1	| WT	| LPIF	| 0030	| 2	| 1	| 1	| S |
-| KR772B9D	| LIMA_RNA_THP1_WT_LPIF_0060_S_2.1.1	| LIMA	| THP1	| WT	| LPIF	| 0060	| 2	| 1	| 1	| S |
-| KR62E3AC	| LIMA_RNA_THP1_WT_LPIF_0090_S_2.1.1	| LIMA	| THP1	| WT	| LPIF	| 0090	| 2	| 1	| 1	| S |
-| KR2BA90C	| LIMA_RNA_THP1_WT_LPIF_0120_S_2.1.1	| LIMA	| THP1	| WT	| LPIF	| 0120	| 2	| 1	| 1	| S |
-| KR79BBD3	| LIMA_RNA_THP1_WT_LPIF_0240_S_2.1.1	| LIMA	| THP1	| WT	| LPIF	| 0240	| 2	| 1	| 1	| S |
-| KR859E81	| LIMA_RNA_THP1_WT_LPIF_0360_S_2.1.1	| LIMA	| THP1	| WT	| LPIF	| 0360	| 2	| 1	| 1	| S |
-| KR3136D3	| LIMA_RNA_THP1_WT_LPIF_1440_S_2.1.1	| LIMA	| THP1	| WT	| LPIF	| 1440	| 2	| 1	| 1	| S |
+| Unique_ID | Name | Project | Cell_Type | Genotype | Condition | Time | Bio_Rep | Tech_Rep | Seq_Rep | Tag | Read1	| Read2	| Sequencing_Directory |
+|-----------|------|---------|-----------|----------|-----------|------|---------|----------|---------|-----|-------|-------|----------------------|
+|KR0A9DF4	| LIMA_RNA_THP1_WT_LPIF_0030_S_3.1.1	| LIMA	| THP1	| WT | LPIF	| 0030	| 3	| 1	| 1	| S | LIMA_RNA_THP-1_0030_3-1-1_S2_R1_001.fastq.gz	| LIMA_RNA_THP-1_0030_3-1-1_S2_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180504_LIMA_3.1.1/fastq/ |
+|KR751205	| LIMA_RNA_THP1_WT_LPIF_0060_S_3.1.1	| LIMA	| THP1	| WT | LPIF	| 0060	| 3	| 1	| 1	| S | LIMA_RNA_THP-1_0060_3-1-1_S3_R1_001.fastq.gz	| LIMA_RNA_THP-1_0060_3-1-1_S3_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180504_LIMA_3.1.1/fastq/ |
+|KR02C443	| LIMA_RNA_THP1_WT_LPIF_0090_S_3.1.1	| LIMA	| THP1	| WT | LPIF	| 0090	| 3	| 1	| 1	| S | LIMA_RNA_THP-1_0090_3-1-1_S4_R1_001.fastq.gz	| LIMA_RNA_THP-1_0090_3-1-1_S4_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180504_LIMA_3.1.1/fastq/ |
+|KR08B759	| LIMA_RNA_THP1_WT_LPIF_0120_S_3.1.1	| LIMA	| THP1	| WT | LPIF	| 0120	| 3	| 1	| 1	| S | LIMA_RNA_THP-1_0120_3-1-1_S5_R1_001.fastq.gz	| LIMA_RNA_THP-1_0120_3-1-1_S5_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180504_LIMA_3.1.1/fastq/ |
+|KR365BAB	| LIMA_RNA_THP1_WT_LPIF_0240_S_3.1.1	| LIMA	| THP1	| WT | LPIF	| 0240	| 3	| 1	| 1	| S | LIMA_RNA_THP-1_0240_3-1-1_S6_R1_001.fastq.gz	| LIMA_RNA_THP-1_0240_3-1-1_S6_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180504_LIMA_3.1.1/fastq/ |
+|KR8A7D54	| LIMA_RNA_THP1_WT_LPIF_0360_S_3.1.1	| LIMA	| THP1	| WT | LPIF	| 0360	| 3	| 1	| 1	| S | LIMA_RNA_THP-1_0360_3-1-1_S7_R1_001.fastq.gz	| LIMA_RNA_THP-1_0360_3-1-1_S7_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180504_LIMA_3.1.1/fastq/ |
+|KR0CE283	| LIMA_RNA_THP1_WT_LPIF_1440_S_3.1.1	| LIMA	| THP1	| WT | LPIF	| 1440	| 3	| 1	| 1	| S | LIMA_RNA_THP-1_1440_3-1-1_S8_R1_001.fastq.gz	| LIMA_RNA_THP-1_1440_3-1-1_S8_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180504_LIMA_3.1.1/fastq/ |
+|KR031F3D	| LIMA_RNA_THP1_WT_LPIF_0000_S_2.1.1	| LIMA	| THP1	| WT | LPIF	| 0000	| 2	| 1	| 1	| S | LIMA_RNA_THP-1_0000_2-1-1_S1_R1_001.fastq.gz	| LIMA_RNA_THP-1_0000_2-1-1_S1_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180502_LIMA_2.1.1/fastq/ |
+|KR13130A	| LIMA_RNA_THP1_WT_LPIF_0030_S_2.1.1	| LIMA	| THP1	| WT | LPIF	| 0030	| 2	| 1	| 1	| S | LIMA_RNA_THP-1_0030_2-1-1_S2_R1_001.fastq.gz	| LIMA_RNA_THP-1_0030_2-1-1_S2_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180502_LIMA_2.1.1/fastq/ |
+|KR772B9D	| LIMA_RNA_THP1_WT_LPIF_0060_S_2.1.1	| LIMA	| THP1	| WT | LPIF	| 0060	| 2	| 1	| 1	| S | LIMA_RNA_THP-1_0060_2-1-1_S3_R1_001.fastq.gz	| LIMA_RNA_THP-1_0060_2-1-1_S3_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180502_LIMA_2.1.1/fastq/ |
+|KR62E3AC	| LIMA_RNA_THP1_WT_LPIF_0090_S_2.1.1	| LIMA	| THP1	| WT | LPIF	| 0090	| 2	| 1	| 1	| S | LIMA_RNA_THP-1_0090_2-1-1_S4_R1_001.fastq.gz	| LIMA_RNA_THP-1_0090_2-1-1_S4_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180502_LIMA_2.1.1/fastq/ |
+|KR2BA90C	| LIMA_RNA_THP1_WT_LPIF_0120_S_2.1.1	| LIMA	| THP1	| WT | LPIF	| 0120	| 2	| 1	| 1	| S | LIMA_RNA_THP-1_0120_2-1-1_S5_R1_001.fastq.gz	| LIMA_RNA_THP-1_0120_2-1-1_S5_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180502_LIMA_2.1.1/fastq/ |
+|KR79BBD3	| LIMA_RNA_THP1_WT_LPIF_0240_S_2.1.1	| LIMA	| THP1	| WT | LPIF	| 0240	| 2	| 1	| 1	| S | LIMA_RNA_THP-1_0240_2-1-1_S6_R1_001.fastq.gz	| LIMA_RNA_THP-1_0240_2-1-1_S6_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180502_LIMA_2.1.1/fastq/ |
+|KR859E81	| LIMA_RNA_THP1_WT_LPIF_0360_S_2.1.1	| LIMA	| THP1	| WT | LPIF	| 0360	| 2	| 1	| 1	| S | LIMA_RNA_THP-1_0360_2-1-1_S7_R1_001.fastq.gz	| LIMA_RNA_THP-1_0360_2-1-1_S7_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180502_LIMA_2.1.1/fastq/ |
+|KR3136D3	| LIMA_RNA_THP1_WT_LPIF_1440_S_2.1.1	| LIMA	| THP1	| WT | LPIF	| 1440	| 2	| 1	| 1	| S | LIMA_RNA_THP-1_1440_2-1-1_S8_R1_001.fastq.gz	| LIMA_RNA_THP-1_1440_2-1-1_S8_R2_001.fastq.gz	| /proj/phanstiel_lab/Data/raw/LIMA/rna/NextSeq_180502_LIMA_2.1.1/fastq/ |
 
 [Back to Top](#table-of-contents)
 
@@ -149,11 +148,11 @@ By default, the pipeline will create an output directory relative to where the p
 ```
 
 #### Defaults
-The **{HOME}** directory is, by default, your present working directory. It is recommended that you move to <code>/proj/phanstiel\_lab/users/onyen</code> prior to running for best results.
+The **{HOME}** directory is, by default, your present working directory. It is recommended that you move to <code>/proj/phanstiel\_lab/users/onyen</code> prior to running for best results. Edit with <code>--home</code> (see below).
 
-The **{PROJ}** name is determined by the "Project" column of the samples you selected from the Master sheet, or provided in the manual sheet. 
+The **{PROJ}** name is determined by the "Project" column of the samples you selected from the Master sheet, or provided in the manual sheet. This can't be changed at this time.
 
-The **{NAME}** of the final output directory is created automatically based on the "Project", "Cell_Type", "Genotype", "Condition", "Time", and "Tag" columns selected or provided. With the exception fo "Tag", it will only use columns that are shared between *all* slected samples.
+The **{NAME}** of the final output directory is created automatically based on the "Project", "Cell_Type", "Genotype", "Condition", "Time", and "Tag" columns selected or provided. With the exception fo "Tag", it will only use columns that are shared between *all* slected samples. Edit with <code>--name</code> and <code>--suffix</code> (see below).
 
 For example, if I ran *all* LIMA samples, including MiniSeq Data (using <code>--tag Q,S</code>), the name would be <code>LIMA_THP1_WT_QS</code>. 
 
@@ -164,7 +163,7 @@ Within <code>/proc</code>, directories will be created according to your run. Th
 - <code>--name</code> (<code>-n</code>, <code>--n</code>): Replace the auto-generated **{NAME}** with any name of your choosing 
 - <code>--suffix</code> (<code>--suff</code>, <code>--SUFF</code>, <code>--SUFFIX</code>): Add a suffix to the auto-generated **{NAME}**\
 **NOTE:** if you provide a manual sheet, it will by default append the suffix <code>MANUAL</code> 
-- <code>--home</code> (<code>--o</code>, <code>--dir</code>, <code>--HOME</code>, <code>--OUT</code>, <code>--DIR</code>): Set the output directory to somewhere other than your PWD (top of diagram)
+- <code>--home</code> (<code>--o</code>, <code>--dir</code>, <code>--HOME</code>, <code>--OUT</code>, <code>--DIR</code>): Change the **{HOME}** directory to somewhere other than your PWD (see top of diagram)
 
 [Back to Top](#table-of-contents)
 
