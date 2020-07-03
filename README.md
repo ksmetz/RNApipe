@@ -1,5 +1,14 @@
 # RNApipe
-Phanstiel lab (temporary) pipeline for paired-end RNAseq data.
+Katie Metz Reed
+*Last Updated: 07-02-2020*
+
+Phanstiel lab (temporary?) pipeline for paired-end RNAseq data.
+
+This pipeline is incorporated with the lab Sequencing Data sheet. The idea is that you run the pipeline without providing your own sample sheet, but by selecting your samples of interest from the Master sheet using [Input Parameters](#input-parameters). Think of it like filtering the spreadsheet.
+
+You can select [what parts of the pipeline to run](#run-parameters), depending on the desired outputs. The major outputs are **1)** quantification files used in downstream differential analysis in R [doesn't require alignment], **2)** QC summary files detailing quality of samples, and **3)** signal tracks for plotting [does require alignment].
+
+Unfortunately the [output structures](#output-parameters) and some other aspects are outdated and rigid. It's also written in python 2 (!!!). I might update it, but we will probably just eventually replace RNApipe with a more streamlined and light-weight pipeline (snakemake, or maybe just a bash script or something). But! It's still functional, and it has a lot of heart, and isn't that what matters?
 
 #### TABLE OF CONTENTS
 - [Quickstart](#quickstart)
@@ -12,6 +21,7 @@ Phanstiel lab (temporary) pipeline for paired-end RNAseq data.
 	- [CORE scripts](#core-scripts)
 	- [MERGE scripts](#merge-scripts)
 	- [FINAL scripts](#final-scripts)
+- [Changes to Make](#changes-to-make)
 
 ------------------------------
 
@@ -26,11 +36,10 @@ Phanstiel lab (temporary) pipeline for paired-end RNAseq data.
 	- The sample sheet lives on the cluster, here:\
 	 <code>/proj/phanstiel_lab/software/RNApipe/config/SequencingData_YYYY-MM-DD.tsv</code>
 	- Check that the date of the sample sheet is past when you entered your info
-	- If not, run the command to upload it:
-```
-		module load launch_pipeline
-		launch googleSync
-```
+	- If not, run the following commands to upload it:
+		- <code>module load launch_pipeline</code>
+		- <code>launch googleSync</code>
+
 3. **Log onto longleaf using your ONYEN**
 
 	- <code>ssh onyen@longleaf.unc.edu</code>
@@ -44,11 +53,11 @@ Phanstiel lab (temporary) pipeline for paired-end RNAseq data.
 	- <code>module load python/2.7.12</code>
 
 6. **Run RNApipe.py, selecting for the Project you want** \
-	Note: See [Detailed Usage](#detailed-usage) for other selection/input options, output customization options, and pipeline options.
+	Note: See [Detailed Usage: Input Parameters](#input-parameters) for other options to filter the samplesheet with. Other sections also detail how to change the [output file paths](#output-parameters), [what parts of the pipeline](#run-parameters) are run, and [how they are run](#command-parameters).
 	- <code>python /proj/phanstiel_lab/software/RNApipe/RNApipe.py --p PROJ [options]</code>
 
 7. **Review the run info printed to terminal screen**
-	- This includes the samples selected, samples merged together, stages to be run, and full path to output directory
+	- This will include the samples selected, samples merged together, stages to be run, and full path to output directory, among other info. 
 	- If the information looks right, answer <code>hell yeah</code> and monitor your run with <code>squeue -u onyen</code>! It's a good idea to double check that no errors appear while the jobs are submitted.
 	- If the information looks wrong, answer <code>nah</code> and adjust your RNApipe.py options.
 
@@ -75,10 +84,10 @@ Many RNApipe.py options are used in combination to determine which files from th
 **DEFAULT:** S (ignores MiniSeq QC runs)
 - <code>-u</code> (<code>--user</code>, <code>--USER</code>, <code>--onyen</code>, <code>--ONYEN</code>)
 
-For all options not selected, with the exception of TAG, it will default to picking all available options for the project listed. The project option is required.
+For all options not selected, with the exception of TAG, it will default to picking all available options for the project listed. The <code>--project</code> option is required.
 
 #### Manual samplesheet input
-There is also a <code>--manual</code> (also <code>--MAN</code>, <code>--man</code>, <code>--MANUAL</code>) option that can override the Sequencing Data sheet. You use this command to point to a different config file, formatted the same way as the Master Sequencing Data sheet, and the program will run on all of the samples listed in that file. **Unforuntately,** for most reliable results (until Katie gets off her butt and rewrites this entire thing), it is best to format manual sheets after at least columns A-M of the Master Sheet. Additional columns can be added for metadata. 
+There is also a <code>--manual</code> (also <code>--MAN</code>, <code>--man</code>, <code>--MANUAL</code>) option that can override the Sequencing Data sheet. You can use this command to point to a different config file, and the program will run on *all* of the samples listed in that file, rather than subsetting the Master sheet. **Unforuntately,** for most reliable results (until Katie gets off her butt and rewrites this entire thing), it is best to format manual sheets after at least columns A-M of the Master Sheet. Additional columns can be added for metadata. 
 
 #### Examples
 To run all biological replicates for the project LIMA, you would enter: \
@@ -115,9 +124,9 @@ Alternatively, to run these samples with a manual sheet, you could make a sheet 
 
 ### Output Parameters
 ***Parameters that control the name and location of the output files*** \
-By default, the pipeline will create an output directory relative to where the program is run. Typically, you will move to the user directory at /proj/phanstiel_lab/users/ONYEN, and it will create the following output directory structure (based on the parts of the pipeline run):
+By default, the pipeline will create an output directory relative to where the program is run. Typically, you will move to the user directory at <code>/proj/phanstiel_lab/users/ONYEN</code>, and it will create the following output directory structure (based on the parts of the pipeline run; see [Detailed Usage: Run Parameters](#run-parameters)):
 ```bash
-. # PWD, or path set by --home
+. {HOME} # PWD, or path set by --home
 └── project
     └── {PROJ} # Based off 'Project' column in sample sheet
         └── rna
@@ -135,18 +144,20 @@ By default, the pipeline will create an output directory relative to where the p
 ```
 
 #### Defaults
+The **{HOME}** directory is, by default, your present working directory. It is recommended that you move to <code>/proj/phanstiel\_lab/users/onyen</code> prior to running for best results.
+
 The **{PROJ}** name is determined by the "Project" column of the samples you selected from the Master sheet, or provided in the manual sheet. 
 
 The **{NAME}** of the final output directory is created automatically based on the "Project", "Cell_Type", "Genotype", "Condition", "Time", and "Tag" columns selected or provided. With the exception fo "Tag", it will only use columns that are shared between *all* slected samples.
 
 For example, if I ran *all* LIMA samples, including MiniSeq Data (using <code>--tag Q,S</code>), the name would be <code>LIMA_THP1_WT_QS</code>. 
 
-Within <code>proc</code>, directories will be created according to your run. The directories <code>config</code>, <code>debug</code>, <code>fastq</code>, and <code>scripts</code> will always be generatd, while the others will depend on which parts of the pipeline you are running (see [Detailed Usage: Run Parameters](#run-parameters)).
+Within <code>/proc</code>, directories will be created according to your run. The directories <code>config</code>, <code>debug</code>, <code>fastq</code>, and <code>scripts</code> will always be generated, while the others will depend on which parts of the pipeline you are running (see [Detailed Usage: Run Parameters](#run-parameters)).
 
 
 #### Options
-- <code>--name</code> (<code>-n</code>, <code>--n</code>): Replace the auto-generated {NAME} with any name of your choosing 
-- <code>--suffix</code> (<code>--suff</code>, <code>--SUFF</code>, <code>--SUFFIX</code>): Add a suffix to the auto-generated {NAME}\
+- <code>--name</code> (<code>-n</code>, <code>--n</code>): Replace the auto-generated **{NAME}** with any name of your choosing 
+- <code>--suffix</code> (<code>--suff</code>, <code>--SUFF</code>, <code>--SUFFIX</code>): Add a suffix to the auto-generated **{NAME}**\
 **NOTE:** if you provide a manual sheet, it will by default append the suffix <code>MANUAL</code> 
 - <code>--home</code> (<code>--o</code>, <code>--dir</code>, <code>--HOME</code>, <code>--OUT</code>, <code>--DIR</code>): Set the output directory to somewhere other than your PWD (top of diagram)
 
@@ -163,15 +174,15 @@ By default, the pipeline will trim low-quality reads, quantify transcripts for u
 - <code>--stage</code> (<code>--STAGE</code>, <code>--S</code>): Set what stages you want the pipeline to run, separated by commas **without spaces** \
 **DEFAULT:** <code>QC,trim,align,quant,signal</code>\
 Options include:
-	- QC: Create individual and summary reports of QC metrics for sequencing and alignment, using FastQC + MultiQC
-	- trim: Remove adapters and low-quality reads from fastq files, using Trim Galore!
-	- align: Align reads to transcriptome (required for signal tracks or splicing info), using HISAT2 and Samtools
-	- quant: Quantify reads and summarize at a gene level for use in DESeq2, using Salmon and txImport
-	- splice: Identify splicing variants, using MAJIQ
-	- signal: Create bedgraph or bigwig signal tracks
-	- merge: Combine aligned files to make merged signal tracks
+	- <code>QC</code>: Create individual and summary reports of QC metrics for sequencing and alignment, using FastQC + MultiQC
+	- <code>trim</code>: Remove adapters and low-quality reads from fastq files, using Trim Galore!
+	- <code>align</code>: Align reads to transcriptome (required for signal tracks or splicing info), using HISAT2 and Samtools
+	- <code>quant</code>: Quantify reads and summarize at a gene level for use in DESeq2, using Salmon and txImport
+	- <code>splice</code>: Identify splicing variants, using MAJIQ
+	- <code>signal</code>: Create bedgraph or bigwig signal tracks
+	- <code>merge</code>: Combine aligned files to make merged signal tracks
 - <code>--merge</code> (<code>--mergeby</code>, <code>--MERGE</code>): Select how you would like to merge samples \
-**DEFAULT:** If you include <code>--stage merge</code> it will combine any samples that have the same info in all columns except for Bio_Rep, Tech_Rep, and Seq_Rep (i.e. <code>LIMA_THP1_WT_0000_1.1.1_Q</code> would merge with <code>LIMA_THP1_WT_0000_2.3.5_Q</code> but not <code>LIMA_THP1_WT_0030_1.1.1_Q</code>.)
+**DEFAULT:** If you include <code>--stage merge</code>, it will combine any samples that have the same info in all columns except for Bio_Rep, Tech_Rep, and Seq_Rep (i.e. <code>LIMA_THP1_WT_0000_1.1.1_Q</code> would merge with <code>LIMA_THP1_WT_0000_2.3.5_Q</code> but not <code>LIMA_THP1_WT_0030_1.1.1_Q</code>).
 - <code>--temp</code> (<code>--TEMP</code>, <code>--keep</code>, <code>--KEEP</code>): True/False for whether to keep temporary files \
 **DEFAULT:** False
 - <code>--signalout</code> (<code>--sigout</code>, <code>--SIGNALOUT</code>, <code>--SIGOUT</code>): Select signal output file type. Options are "bigwig" and "bedgraph"\
@@ -222,7 +233,7 @@ The pipeline will run many programs. Some of the options for these programs are 
 
 ## Commands Run
 ***Overview of commands run by RNApipe.py SLURM scripts***\
-This section will roughly review the commands (including built-in and user-provided settings) run by RNApipe.py, given each stage selected. Paths will be abbreviated with (...) replacing <code>{HOME}/project/{RPOJ}/rna/{NAME}/proc/</code>. “Name” represents the name of the sample (from the “Name” column of Config), while "{NAME}" represents the project name generated automatically or provided by the --name command (see Output Parameters). “MergeName” represents the combined name from merged samples (see [Detailed Usage: Output Parameters](#output-parameters)).
+This section will roughly review the commands (including built-in and user-provided settings) run by RNApipe.py, given each stage selected. Paths will be abbreviated with (...) replacing <code>{HOME}/project/{RPOJ}/rna/{NAME}/proc/</code>. “Name” represents the name of the sample (from the “Name” column of Config), while "{NAME}" represents the project name generated automatically or provided by the --name command (see Output Parameters). “MergeName” represents the combined name from merging samples.
 
 #### CORE SCRIPTS
 These commands are written and run for every sample (line) in the samplesheet provided.
@@ -254,6 +265,8 @@ These commands are written and run for every sample (line) in the samplesheet pr
 
 ##### signal stage, signalout set to bigwig
 14. <code>bamCoverage -b .../align/Name\_sorted.bam -o .../signal/Name.bw</code>
+15. <code>bamCoverage --filterRNAstrand forward -b .../align/Name\_sorted.bam -o .../signal/Name_fwd.bw</code>
+16. <code>bamCoverage --filterRNAstrand reverse -b .../align/Name\_sorted.bam -o .../signal/Name_rev.bw</code>
 
 #### MERGE SCRIPTS
 These commands are run for every merged sample in <code>.../config/mergeList</code>, as deteremined by <code>--stage merge</code> and <code>--mergeby</code>.
@@ -267,10 +280,12 @@ These commands are run for every merged sample in <code>.../config/mergeList</co
 
 ##### signal stage, signalout set to bigwig
 4. <code>bamCoverage -b .../align/MERGE\_MergeName.bam -o .../signal/MERGE\_MergeName.bw</code>
+5. <code>bamCoverage --filterRNAstrand forward -b .../align/MERGE\_MergeName.bam -o .../signal/MERGE\_MergeName_fwd.bw</code>
+6. <code>bamCoverage --filterRNAstrand reverse -b .../align/MERGE\_MergeName.bam -o .../signal/MERGE\_MergeName_rev.bw</code>
 
 ##### temp/keep set to False
-5. <code>rm .../align/MERGE\_MergeName.bam</code>
-6. <code>rm .../align/MERGE\_MergeName.bam.bai</code>
+7. <code>rm .../align/MERGE\_MergeName.bam</code>
+8. <code>rm .../align/MERGE\_MergeName.bam.bai</code>
 
 #### FINAL SCRIPTS
 Run only one time for the entire samplesheet
@@ -289,5 +304,22 @@ Run only one time for the entire samplesheet
 
 ##### splice stage
 7. <code>majiq build {MJQANN} -c {MJQCON} -j 8 -o .../splice</code>
+
+[Back to Top](#table-of-contents)
+
+-----------------
+
+## Changes to Make
+
+There are a lot of issues and frustrations with RNApipe in its current form. I'm not sure if I will ever edit it, or if we will just plan to replace it with a simpler version down the road. However, in case I do ever have a chance to fix some things, I wanted to keep a list of what needs addressing - either for edits or just to keep in mind for future pipelines. If you have any suggestions or bugs that aren't on the list let me know!
+
+- **MAJOR:** Add in strand-specific signal tracks.\
+***NOTE: I added this in as of 07/02/2020! Only for bigwigs. But it is UNTESTED, so be warned!***
+- Revamp the output structure to not have so many dang nested directories!!!!
+- Allow for running on truly manual samplesheets (without all the standard columns required)
+- Probably can just get rid of the bedgraph option for signal tracks? Maybe not, as they are more human readable. If you want to plot things in R or IGV though, bigwig is the way to go 100% !
+- Reconsider memory/node requirements?
+- Consider making MERGE jobs wait only on their respective samples, rather than waiting for all CORE jobs to finish
+- Add SLURM job IDs to log files
 
 [Back to Top](#table-of-contents)

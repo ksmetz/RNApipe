@@ -954,7 +954,9 @@ for n in range(len(config)):
                 file.write('printf "Bigwig file already exists for sample ' + nName + '\\n"\n'+
                        '# COMMAND USED: \n#')
 
-            file.write('bamCoverage -b ' + directories['align'] + '/' + nName + '_sorted.bam -o ' + directories['signal'] + '/' + nName + '.bw\n')
+            file.write('bamCoverage -b ' + directories['align'] + '/' + nName + '_sorted.bam -o ' + directories['signal'] + '/' + nName + '.bw\n' +
+              'bamCoverage --filterRNAstrand forward -b ' + directories['align'] + '/' + nName + '_sorted.bam -o ' + directories['signal'] + '/' + nName + '_fwd.bw\n' + 
+              'bamCoverage --filterRNAstrand reverse -b ' + directories['align'] + '/' + nName + '_sorted.bam -o ' + directories['signal'] + '/' + nName + '_rev.bw\n')
 
     file.close()
 
@@ -1079,7 +1081,9 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
                         file.write('printf "Merged bigwig file already exists for samples ' + ", ".join(sampleList) + '\\n"\n'+
                                '# COMMAND USED: \n#')
 
-                    file.write('bamCoverage -b ' + directories['align'] + '/MERGE_' + mergeName + '.bam -o ' + directories['signal'] + '/MERGE_' + mergeName + '.bw\n')
+                    file.write('bamCoverage -b ' + directories['align'] + '/MERGE_' + mergeName + '.bam -o ' + directories['signal'] + '/MERGE_' + mergeName + '.bw\n' +
+                      'bamCoverage --filterRNAstrand forward -b ' + directories['align'] + '/MERGE_' + mergeName + '.bam -o ' + directories['signal'] + '/MERGE_' + mergeName + '_fwd.bw\n' + 
+                      'bamCoverage --filterRNAstrand reverse -b ' + directories['align'] + '/MERGE_' + mergeName + '.bam -o ' + directories['signal'] + '/MERGE_' + mergeName + '_rev.bw\n')
 
             if TEMP == False:
                 file.write(
