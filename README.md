@@ -1,14 +1,17 @@
 # RNApipe
-Katie Metz Reed
+Katie Metz Reed\
 *Last Updated: 07-02-2020*
 
 Phanstiel lab (temporary?) pipeline for paired-end RNAseq data.
 
 This pipeline is incorporated with the lab Sequencing Data sheet. The idea is that you run the pipeline without providing your own sample sheet, but by selecting your samples of interest from the Master sheet using [Input Parameters](#input-parameters). Think of it like filtering the spreadsheet.
 
-You can select [what parts of the pipeline to run](#run-parameters), depending on the desired outputs. The major outputs are **1)** quantification files used in downstream differential analysis in R [doesn't require alignment], **2)** QC summary files detailing quality of samples, and **3)** signal tracks for plotting [does require alignment].
+You can select [what parts of the pipeline to run](#run-parameters), depending on the desired outputs. The major outputs are:
+1. quantification files used for differential analysis in R [does NOT require alignment]
+2. QC summary html files detailing quality of samples
+3. signal tracks for plotting [does require alignment]
 
-Unfortunately the [output structures](#output-parameters) and some other aspects are outdated and rigid. It's also written in python 2 (!!!). I might update it, but we will probably just eventually replace RNApipe with a more streamlined and light-weight pipeline (snakemake, or maybe just a bash script or something). But! It's still functional, and it has a lot of heart, and isn't that what matters?
+Unfortunately the [output structures](#output-parameters) and some other aspects are outdated and rigid. It's also written in python 2 (!!!). [I might update it](#changes-to-make), but we will probably just eventually replace RNApipe with a more streamlined and light-weight pipeline (snakemake, or maybe just a bash script or something). But! It's still functional, and it has a lot of heart, and isn't that what matters?
 
 #### TABLE OF CONTENTS
 - [Quickstart](#quickstart)
@@ -63,6 +66,8 @@ Unfortunately the [output structures](#output-parameters) and some other aspects
 
 See below for more detailed usage, or use:\
 <code>python /proj/phanstiel_lab/software/RNApipe/RNApipe.py --help</code>
+
+[Back to Top](#table-of-contents)
 
 -----------------
 
