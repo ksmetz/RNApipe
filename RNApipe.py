@@ -179,7 +179,7 @@ runGroup.add_option("--temp", "--TEMP", "--keep", "--KEEP",action = "store", typ
 # Stage: pick the parts of the analysis you want to run (function to interpret???)
 runGroup.add_option("--stage", "--STAGE", "--S",action = "store", type = "string", dest = "stage", 
                   help = "Select the stages of the code to run. Choose from 'QC' (create multiQC), trim' (create trimmed.fq), quant' (Salmon quant.sf files), 'align' (BAM files), 'signal' (bedgraphs/bigwigs, see --sigout), 'merge' (combine BAMs by Bio Rep for signal step), and 'splice' (MAJIQ).",
-                  default="QC,trim,align,quant,signal,splice") 
+                  default="QC,trim,align,quant,signal") 
 # Merge: choose what to match for BAM alignment merging (used to create merged signal tracks)
 runGroup.add_option("--merge", "--mergeby", "--MERGE", action = "store", type = "string", dest = "merge", 
                   help = "Select which columns to merge when creating sample alignments for combined signal tracks. Please use exact column name.",
