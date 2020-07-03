@@ -1,9 +1,21 @@
 # RNApipe
-Phanstiel lab temporary pipeline for paired-end RNAseq data
+Phanstiel lab (temporary) pipeline for paired-end RNAseq data.
+
+#### TABLE OF CONTENTS
+- [Quickstart](#quickstart)
+- [Detailed Usage](#detailed-usage)
+	- [Input Parameters](#input-parameters)
+	- [Output Parameters](#output-parameters)
+	- [Run Parameters](#run-parameters)
+	- [Command Parameters](#command-parameters)
+- [Commands Run](#commands-run)
+	- [CORE scripts](#core-scripts)
+	- [MERGE scripts](#merge-scripts)
+	- [FINAL scripts](#final-scripts)
 
 ------------------------------
 
-## Quickstart - RNApipe.py
+## Quickstart
 
 1. **Make sure your sample info is entered into the "Sequencing Data" spreadsheet on the lab Google Drive**
 	- Edit *your copy* of the sheet (if you don't have one, ask Katie or [make your own](https://docs.google.com/spreadsheets/d/13dfdyM4HxgsEoFhiuDqrohGfLulVtxYHqSK1dA29Xvw/edit#gid=2031315238))
@@ -15,10 +27,10 @@ Phanstiel lab temporary pipeline for paired-end RNAseq data
 	 <code>/proj/phanstiel_lab/software/RNApipe/config/SequencingData_YYYY-MM-DD.tsv</code>
 	- Check that the date of the sample sheet is past when you entered your info
 	- If not, run the command to upload it:
-
+```
 		module load launch_pipeline
 		launch googleSync
-
+```
 3. **Log onto longleaf using your ONYEN**
 
 	- <code>ssh onyen@longleaf.unc.edu</code>
@@ -31,14 +43,14 @@ Phanstiel lab temporary pipeline for paired-end RNAseq data
 
 	- <code>module load python/2.7.12</code>
 
-6. **Run RNApipe.py, selecting for the Project you want** 
-	Optional: select by Bio Rep, Condition, etc. (See [Detailed Usage: Input Parameters](#input-parameters))
+6. **Run RNApipe.py, selecting for the Project you want** \
+	Note: See [Detailed Usage](#detailed-usage) for other selection/input options, output customization options, and pipeline options.
 	- <code>python /proj/phanstiel_lab/software/RNApipe/RNApipe.py --p PROJ [options]</code>
 
 7. **Review the run info printed to terminal screen**
 	- This includes the samples selected, samples merged together, stages to be run, and full path to output directory
-	- If the information looks right, answer "hell yeah" and monitor your run with <code>squeue -u onyen</code>! It's a good idea to double check that no errors appear while the jobs are submitted.
-	- If the information looks wrong, answer "nah" and adjust your RNApipe.py options.
+	- If the information looks right, answer <code>hell yeah</code> and monitor your run with <code>squeue -u onyen</code>! It's a good idea to double check that no errors appear while the jobs are submitted.
+	- If the information looks wrong, answer <code>nah</code> and adjust your RNApipe.py options.
 
 See below for more detailed usage, or use:\
 <code>python /proj/phanstiel_lab/software/RNApipe/RNApipe.py --help</code>
@@ -50,18 +62,18 @@ See below for more detailed usage, or use:\
 ### Input Parameters 
 ***Parameters that control which samples are run in the pipeline*** \
 Many RNApipe.py options are used in combination to determine which files from the Sequencing Data sheet you would like to run. They correspond to the first several columns (C through M) of the data sheet. These options include:
-- -p (--p, --proj, --PROJ, --project) \
+- <code>-p</code> (<code>--p</code>, <code>--proj</code>, <code>--PROJ</code>, <code>--project</code>) \
 **REQUIRED** (unless manual config file supplied)
-- --cell (--CELL)
-- --geno (--g, --GENO, --genotype)
-- --cond (--COND, --condition)
-- --time (--TIME)
-- --br (--bior, --BIOR, --biorep, --bio)
-- --tr (--techr, --TECR, --techrep, --tech)
-- --sr (--seqr, --SEQR, --seqrep, --seq)
-- --tag (--TAG) \
+- <code>--cell</code> (<code>--CELL</code>)
+- <code>--geno</code> (<code>--g</code>, <code>--GENO</code>, <code>--genotype</code>)
+- <code>--cond</code> (<code>--COND</code>, <code>--condition</code>)
+- <code>--time</code> (<code>--TIME</code>)
+- <code>--br</code> (<code>--bior</code>, <code>--BIOR</code>, <code>--biorep</code>, <code>--bio</code>)
+- <code>--tr</code> (<code>--techr</code>, <code>--TECR</code>, <code>--techrep</code>, <code>--tech</code>)
+- <code>--sr</code> (<code>--seqr</code>, <code>--SEQR</code>, <code>--seqrep</code>, <code>--seq</code>)
+- <code>--tag</code> (<code>--TAG</code>) \
 **DEFAULT:** S (ignores MiniSeq QC runs)
-- -u (--user, --USER, --onyen, --ONYEN)
+- <code>-u</code> (<code>--user</code>, <code>--USER</code>, <code>--onyen</code>, <code>--ONYEN</code>)
 
 For all options not selected, with the exception of TAG, it will default to picking all available options for the project listed. The project option is required.
 
@@ -97,9 +109,11 @@ Alternatively, to run these samples with a manual sheet, you could make a sheet 
 | KR859E81	| LIMA_RNA_THP1_WT_LPIF_0360_S_2.1.1	| LIMA	| THP1	| WT	| LPIF	| 0360	| 2	| 1	| 1	| S |
 | KR3136D3	| LIMA_RNA_THP1_WT_LPIF_1440_S_2.1.1	| LIMA	| THP1	| WT	| LPIF	| 1440	| 2	| 1	| 1	| S |
 
+[Back to Top](#table-of-contents)
+
 -----------------
 
-### Output Parameters {#output}
+### Output Parameters
 ***Parameters that control the name and location of the output files*** \
 By default, the pipeline will create an output directory relative to where the program is run. Typically, you will move to the user directory at /proj/phanstiel_lab/users/ONYEN, and it will create the following output directory structure (based on the parts of the pipeline run):
 ```bash
@@ -109,15 +123,15 @@ By default, the pipeline will create an output directory relative to where the p
         └── rna
             └── {NAME} # Auto-generated OR set with --name, appended with --suffix
                 └── proc
-                    ├── config	# Subset samplesheet used; merged sequence info sheet
-                    ├── debug	# Standard out/error log files
-                    ├── fastq	# Links to fastq files used
-                    ├── scripts	# SLURM scripts written and used
-                    ├── (aligned)	# BAM + BAI files
-                    ├── (QC)	# MultiQC summary HTML report
-                    ├── (quant)	# quant.sf files, tximport .RDS for use in DESeq2
-                    ├── (signal)	# Signal tracks (bedgraphs and/or bigwigs)
-                    └── (splice)	# LSV + other MAJIQ files
+                    ├── config    # Subset samplesheet used; merged sequence info sheet
+                    ├── debug     # Standard out/error log files
+                    ├── fastq     # Links to fastq files used
+                    ├── scripts   # SLURM scripts written and used
+                    ├── (aligned) # BAM + BAI files
+                    ├── (QC)      # MultiQC summary HTML report
+                    ├── (quant)   # quant.sf files, tximport .RDS for use in DESeq2
+                    ├── (signal)  # Signal tracks (bedgraphs and/or bigwigs)
+                    └── (splice)  # LSV + other MAJIQ files
 ```
 
 #### Defaults
@@ -130,21 +144,24 @@ For example, if I ran *all* LIMA samples, including MiniSeq Data (using <code>--
 Within <code>proc</code>, directories will be created according to your run. The directories <code>config</code>, <code>debug</code>, <code>fastq</code>, and <code>scripts</code> will always be generatd, while the others will depend on which parts of the pipeline you are running (see [Detailed Usage: Run Parameters](#run-parameters)).
 
 
-#### Other options
-- --name (-n, --n): Replace the auto-generated {NAME} with any name of your choosing 
-- --suffix (--suff, --SUFF, --SUFFIX): Add a suffix to the auto-generated {NAME}\
+#### Options
+- <code>--name</code> (<code>-n</code>, <code>--n</code>): Replace the auto-generated {NAME} with any name of your choosing 
+- <code>--suffix</code> (<code>--suff</code>, <code>--SUFF</code>, <code>--SUFFIX</code>): Add a suffix to the auto-generated {NAME}\
 **NOTE:** if you provide a manual sheet, it will by default append the suffix <code>MANUAL</code> 
-- --home (--o, --dir, --HOME, --OUT, --DIR): Set the output directory to somewhere other than your PWD (top of diagram)
+- <code>--home</code> (<code>--o</code>, <code>--dir</code>, <code>--HOME</code>, <code>--OUT</code>, <code>--DIR</code>): Set the output directory to somewhere other than your PWD (top of diagram)
+
+[Back to Top](#table-of-contents)
 
 -----------------
 
 ### Run Parameters 
 ***Parameters that control what parts of the pipeline to run*** \
-By default, the pipeline will trim low-quality reads, quantify transcripts for use in DESeq2, and align transcripts to create signal tracks and splicing info (see map below). There are several temporary files created in this process that are deleted by default during the pipeline (grey boxes below). If files already exist from previous runs, the default behavior is to overwrite them.
+By default, the pipeline will trim low-quality reads, quantify transcripts for use in DESeq2, and align transcripts to create signal tracks and splicing info (see map below). There are several temporary files created in this process that are deleted by default during the pipeline (grey boxes below). If files already exist from previous runs, the default behavior is to overwrite them. These default settings can be changed by many run parameters, described below. 
 
 ![](img/RNApipe_flow-01.png)
 
-- --stage (--STAGE, --S): Set what stages you want the pipeline to run, separated by commas **without spaces** \
+- <code>--stage</code> (<code>--STAGE</code>, <code>--S</code>): Set what stages you want the pipeline to run, separated by commas **without spaces** \
+**DEFAULT:** <code>QC,trim,align,quant,signal</code>\
 Options include:
 	- QC: Create individual and summary reports of QC metrics for sequencing and alignment, using FastQC + MultiQC
 	- trim: Remove adapters and low-quality reads from fastq files, using Trim Galore!
@@ -153,15 +170,16 @@ Options include:
 	- splice: Identify splicing variants, using MAJIQ
 	- signal: Create bedgraph or bigwig signal tracks
 	- merge: Combine aligned files to make merged signal tracks
-**DEFAULT:** <code>QC,trim,align,quant,signal</code>
-- --merge (--mergeby, --MERGE): Select how you would like to merge samples \
+- <code>--merge</code> (<code>--mergeby</code>, <code>--MERGE</code>): Select how you would like to merge samples \
 **DEFAULT:** If you include <code>--stage merge</code> it will combine any samples that have the same info in all columns except for Bio_Rep, Tech_Rep, and Seq_Rep (i.e. <code>LIMA_THP1_WT_0000_1.1.1_Q</code> would merge with <code>LIMA_THP1_WT_0000_2.3.5_Q</code> but not <code>LIMA_THP1_WT_0030_1.1.1_Q</code>.)
-- --temp (--TEMP, --keep, --KEEP): True/False for whether to keep temporary files \
+- <code>--temp</code> (<code>--TEMP</code>, <code>--keep</code>, <code>--KEEP</code>): True/False for whether to keep temporary files \
 **DEFAULT:** False
-- --signalout (--sigout, --SIGNALOUT, --SIGOUT): Select signal output file type. Options are "bigwig" and "bedgraph"\
+- <code>--signalout</code> (<code>--sigout</code>, <code>--SIGNALOUT</code>, <code>--SIGOUT</code>): Select signal output file type. Options are "bigwig" and "bedgraph"\
 **DEFAULT:** bigwig
-- --rerun (--RERUN): True/False for whether to overwrite existing files that might exist from previous runs \
+- <code>--rerun</code> (<code>--RERUN</code>): True/False for whether to overwrite existing files that might exist from previous runs \
 **DEFAULT:** True
+
+[Back to Top](#table-of-contents)
 
 -----------------
 
@@ -170,103 +188,106 @@ Options include:
 The pipeline will run many programs. Some of the options for these programs are hard-coded, while others can be changed through the command parameters of RNApipe.py. These options include:
 
 #### *txImport* (for --stage quant)
-- --ann (--ANN, --annotation, --gtf, --GTF): Path to transcriptome annotation file\
+- <code>--ann</code> (<code>--ANN</code>, <code>--annotation</code>, <code>--gtf</code>, <code>--GTF</code>): Path to transcriptome annotation file\
 **DEFAULT:** hg19 \
 <code>/proj/phanstiel_lab/SHARE/genomes/GENCODE.v19/gencode.v19.annotation.gtf_withproteinids</code>
 
 #### *Salmon* (for --stage quant)
-- --trns (--TRNS, --transcript): Path to Salmon transcript index \
+- <code>--trns</code> (<code>--TRNS</code>, <code>--transcript</code>): Path to Salmon transcript index \
 **DEFAULT:** hg19 \
 <code>/proj/phanstiel_lab/SHARE/geonmes/GENCODE.v19/salmon_index</code>
 
 #### *HISAT2* (for --stage align)
-- --hisatidx (--HSIDX, --hisat2idx, --hisat2index): Path to HISAT2 index \
+- <code>--hisatidx</code> (<code>--HSIDX</code>, <code>--hisat2idx</code>, <code>--hisat2index</code>): Path to HISAT2 index \
 **DEFAULT:** hg19 \
 <code>/proj/seq/data/HG19_UCSC/Sequence/HISAT2Index/genome</code>
 
 #### *MAJIQ* (for --stage splice)
-- --majConfig (--mfqConfig, --mjqcon, --majcon): Path to custom MAJIQ configuration file \
+- <code>--majConfig</code> (<code>--mfqConfig</code>, <code>--mjqcon</code>, <code>--majcon</code>): Path to custom MAJIQ configuration file \
 **DEFAULT:** automatically generated config based on sample config, other options \
 <code>{HOME}/project/{PROJ}/rna/{NAME}/proc/config/MAJIQconfig_NAME_YYMMDD_HHMMSS.txt </code>
-- --length (--readlength, --readlen, --len): Read length, for MAJIQ config file \
+- <code>--length</code> (<code>--readlength</code>, <code>--readlen</code>, <code>--len</code>): Read length, for MAJIQ config file \
 **DEFAULT:** 150
-- --genome: Name of genome used, for MAJIQ config file \
+- <code>--genome</code>: Name of genome used, for MAJIQ config file \
 **DEFAULT:** hg19
-- --strand (--strandness): Strandness, chosen from ‘forward’, ‘reverse’ and ‘None’, for MAJIQ config file \
+- <code>--strand</code> (<code>--strandness</code>): Strandness, chosen from ‘forward’, ‘reverse’ and ‘None’, for MAJIQ config file \
 **DEFAULT:** forward
-- --mjqann (--MJQANN, --majiqannotation, -gff3, --GFF3): GFF3 transcriptome annotation \
+- <code>--mjqann</code> (<code>--MJQANN</code>, <code>--majiqannotation</code>, <code>-gff3</code>, <code>--GFF3</code>): GFF3 transcriptome annotation \
 **DEFAULT:** hg19 \
-/proj/phanstiel_lab/SHARE/genomes/GENCODE.v19/gencode.v19.annotation.gtf_withproteinids
+<code>/proj/phanstiel_lab/SHARE/genomes/GENCODE.v19/gencode.v19.annotation.gtf_withproteinids</code>
+
+[Back to Top](#table-of-contents)
 
 -----------------
 
-### Commands Run
+## Commands Run
 ***Overview of commands run by RNApipe.py SLURM scripts***\
-This section will roughly review the commands (including built-in and user-provided settings) run by RNApipe.py, given each stage selected. Paths will be abbreviated with (...). “Name” represents the name of the sample (from the “Name” column of Config), while “NAME” represents the project name generated automatically or provided by the --name command (see Output Parameters). “MergeName” represents the combined name from merged samples (see [Detailed Usage: Output Parameters](#output-parameters)).
+This section will roughly review the commands (including built-in and user-provided settings) run by RNApipe.py, given each stage selected. Paths will be abbreviated with (...) replacing <code>{HOME}/project/{RPOJ}/rna/{NAME}/proc/</code>. “Name” represents the name of the sample (from the “Name” column of Config), while "{NAME}" represents the project name generated automatically or provided by the --name command (see Output Parameters). “MergeName” represents the combined name from merged samples (see [Detailed Usage: Output Parameters](#output-parameters)).
 
 #### CORE SCRIPTS
 These commands are written and run for every sample (line) in the samplesheet provided.
 
 ##### QC stage
-1. <code>fastqc -o .../{NAME}/proc/QC .../{NAME}/proc/fastq/Name\_R1.fastq.gz .../{NAME}/proc/fastq/Name\_R2.fastq.gz</code>
+1. <code>fastqc -o .../QC .../fastq/Name\_R1.fastq.gz .../fastq/Name\_R2.fastq.gz</code>
 
 ##### trim stage
-2.  trim\_galore -o .../fastq --paired .../fastq/Name\_R1.fastq.gz .../fastq/Name\_R2.fastq.gz
-3.  mv .../fastq/Name\_R1\_val_1.\* .../fastq/Name\_1\_trimmed.fq.gz
-4.  mv .../fastq/Name\_R1\*\_trimming\_report.txt ../fastq/Name\_1.fastq\_trimming\_report.txt
-5.  mv .../fastq/Name\_R2\_val\_2.\* .../fastq/Name\_2\_trimmed.fq.gz
-6.  mv .../fastq/Name\_R2\*\_trimming\_report.txt ../fastq/Name\_2.fastq\_trimming\_report.txt
+2.  <code>trim\_galore -o .../fastq --paired .../fastq/Name\_R1.fastq.gz .../fastq/Name\_R2.fastq.gz</code>
+3.  <code>mv .../fastq/Name\_R1\_val_1.\* .../fastq/Name\_1\_trimmed.fq.gz</code>
+4.  <code>mv .../fastq/Name\_R1\*\_trimming\_report.txt ../fastq/Name\_1.fastq\_trimming\_report.txt</code>
+5.  <code>mv .../fastq/Name\_R2\_val\_2.\* .../fastq/Name\_2\_trimmed.fq.gz</code>
+6.  <code>mv .../fastq/Name\_R2\*\_trimming\_report.txt ../fastq/Name\_2.fastq\_trimming\_report.txt</code>
 
 ##### quant stage
-7. salmon quant --writeUnmappedNames --threads 1 -i TRNS -l A -1 .../fastq/Name\_1\_trimmed.fq.gz -2 .../fastqName\_2\_trimmed.fq.gz -o .../quant/Name
+7. <code>salmon quant --writeUnmappedNames --threads 1 -i {TRNS} -l A -1 .../fastq/Name\_1\_trimmed.fq.gz -2 .../fastqName\_2\_trimmed.fq.gz -o .../quant/Name</code>
 
 ##### align stage
-8. hisat2 -q -x HSIDX -1 .../fastq/Name\_1\_trimmed.fq.gz -2 .../fastq/Name\_2\_trimmed.fq.gz \| samtools view -u \| samtools sort -o .../align/Name\_sorted.bam
-9. samtools flagstat .../align/Name\_sorted.bam > .../align/Name\_stats.txt
-10. samtools index .../align/Name\_sorted.bam
+8. <code>hisat2 -q -x HSIDX -1 .../fastq/Name\_1\_trimmed.fq.gz -2 .../fastq/Name\_2\_trimmed.fq.gz \| samtools view -u \| samtools sort -o .../align/Name\_sorted.bam</code>
+9. <code>samtools flagstat .../align/Name\_sorted.bam > .../align/Name\_stats.txt</code>
+10. <code>samtools index .../align/Name\_sorted.bam</code>
 
 ##### temp/keep set to False
-11. rm .../fastq/Name\_1\_trimmed.fq.gz
-12. rm .../fastq/Name\_2\_trimmed.fq.gz
+11. <code>rm .../fastq/Name\_1\_trimmed.fq.gz</code>
+12. <code>rm .../fastq/Name\_2\_trimmed.fq.gz</code>
 
 ##### signal stage, signalout set to bedgraph
-13. bedtools genomecov -bga -ibam .../align/Name\_sorted.bam > .../signal/Name.bedgraph
+13. <code>bedtools genomecov -bga -ibam .../align/Name\_sorted.bam > .../signal/Name.bedgraph</code>
 
 ##### signal stage, signalout set to bigwig
-14.  bamCoverage -b .../align/Name\_sorted.bam -o .../signal/Name.bw
+14. <code>bamCoverage -b .../align/Name\_sorted.bam -o .../signal/Name.bw</code>
 
 #### MERGE SCRIPTS
 These commands are run for every merged sample in <code>.../config/mergeList</code>, as deteremined by <code>--stage merge</code> and <code>--mergeby</code>.
 
 ##### merge stage
-1. samtools merge .../align/MERGE\_MergeName.bam .../align/Name1\_sorted.bam .../align/Name2\_sorted.bam
-2. samtools index .../align/MERGE\_MergeName.bam
+1. <code>samtools merge .../align/MERGE\_MergeName.bam .../align/Name1\_sorted.bam .../align/Name2\_sorted.bam</code>
+2. <code>samtools index .../align/MERGE\_MergeName.bam</code>
 
 ##### signal stage, signalout set to bedgraph
-3. bedtools genomecov -bga -ibam .../align/MERGE\_MergeName.bam > .../signal/MERGE\_MergeName.bedgraph
+3. <code>bedtools genomecov -bga -ibam .../align/MERGE\_MergeName.bam > .../signal/MERGE\_MergeName.bedgraph</code>
 
 ##### signal stage, signalout set to bigwig
-4. bamCoverage -b .../align/MERGE\_MergeName.bam -o .../signal/MERGE\_MergeName.bw
+4. <code>bamCoverage -b .../align/MERGE\_MergeName.bam -o .../signal/MERGE\_MergeName.bw</code>
 
 ##### temp/keep set to False
-5. rm .../align/MERGE\_MergeName.bam
-6. rm .../align/MERGE\_MergeName.bam.bai
+5. <code>rm .../align/MERGE\_MergeName.bam</code>
+6. <code>rm .../align/MERGE\_MergeName.bam.bai</code>
 
 #### FINAL SCRIPTS
 Run only one time for the entire samplesheet
 
 ##### QC stage
-1. multiqc -f .../proc/* -o .../QC
-2. mv .../QC/multiqc\_report.html .../QC/NAME\_multiqc\_report.html
+1. <code>multiqc -f .../proc/* -o .../QC</code>
+2. <code>mv .../QC/multiqc\_report.html .../QC/NAME\_multiqc\_report.html</code>
 
 ##### temp/keep set to False
-3. rm .../QC/\*fastqc.zip
-4. rm .../QC/\*fastqc.html
-5. rm .../fastq/\*fastq\_trimming\_report.txt
+3. <code>rm .../QC/\*fastqc.zip</code>
+4. <code>rm .../QC/\*fastqc.html</code>
+5. <code>rm .../fastq/\*fastq\_trimming\_report.txt</code>
 
 ##### quant stage
-6. Rscript /proj/phanstiel\_lab/software/RNApipe/txImporter.R .../config/config\_NAME\_YYMMDD\_HHMMSS.tsv {ANNT} .../quant {NAME}
+6. <code>Rscript /proj/phanstiel\_lab/software/RNApipe/txImporter.R .../config/config\_NAME\_YYMMDD\_HHMMSS.tsv {ANNT} .../quant {NAME}</code>
 
 ##### splice stage
-7. majiq build {MJQANN} -c {MJQCON} -j 8 -o .../splice
+7. <code>majiq build {MJQANN} -c {MJQCON} -j 8 -o .../splice</code>
 
+[Back to Top](#table-of-contents)
