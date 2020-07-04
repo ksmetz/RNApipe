@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
 ##########
-# This is the RNA-Seq processing pipeline
+# This is the ChIP-Seq processing pipeline
 #=========
 # AUTHOR: Katie Metz Reed
-# UPDATED: 2019-02-14
+# UPDATED: 2020-07-04
 #=========
 # This is what the pipeline does. (Update this at some point)
 ##########
@@ -78,8 +78,9 @@ TrimVers    = "0.4.3"
 SalmonVers  = "0.8.2"
 rVers       = "3.3.1"
 multiQCvers = "1.5" 
-majiqVers   = "1.1.7"
-hisatVers   = "2.1.0"
+MACSvers    = "2016-02-15"
+bwaVers     = "0.7.17"
+javaVers    = "10.0.2"
 samVers     = "1.9"
 bedVers     = "2.26"
 deepVers    = "3.0.1"
@@ -109,31 +110,34 @@ selGroup = optparse.OptionGroup(parser, "Selection Parameters",
 # Project (Column 3, C)
 selGroup.add_option("-p", "--p", "--proj", "--PROJ", "--project",action = "store", type = "string", dest = "proj", 
                   help = "Name of project. Only one may be selected. Required unless supplying manual config file with --manual",default="all")
-# Cell_Type (Column 4, D)
+# Target (Column 4, D)
+selGroup.add_option("--t", "--target", "--targ", "--TARGET", "--TARG", action = "store", type = "string", dest = "targ", 
+                    help = "Name of IP target",default = "all")
+# Cell_Type (Column 5, E)
 selGroup.add_option("--cell", "--CELL",action = "store", type = "string", dest = "cell", 
                   help = "Cell type selected.",default="all")
-# Genotype (Column 5, E)
+# Genotype (Column 6, F)
 selGroup.add_option("-g", "--geno", "--GENO", "--genotype",action = "store", type = "string", dest = "geno", 
                   help = "Genotype selected.",default="all")
-# Condition (Column 6, F)
+# Condition (Column 7, G)
 selGroup.add_option("--cond", "--COND", "--condition",action = "store", type = "string", dest = "cond", 
                   help = "Conditions selected.",default="all")
-# Time (Column 7, G)
+# Time (Column 8, H)
 selGroup.add_option("--time", "--TIME",action = "store", type = "string", dest = "time", 
                   help = "Time points selected.",default="all")
-# Bio_Rep (Column 8, H)
+# Bio_Rep (Column 9, I)
 selGroup.add_option("--br", "--bior", "--BIOR", "--biorep", "--bio",action = "store", type = "string", dest = "bior", 
                   help = "Biological replicates selected.",default="all")
-# Tech_Rep (Column 9, I)
+# Tech_Rep (Column 10, J)
 selGroup.add_option("--tr", "--techr", "--TECR", "--techrep", "--tech",action = "store", type = "string", dest = "tecr", 
                   help = "Technical replicates selected.",default="all")
-# Seq_Rep (Column 10,J)
+# Seq_Rep (Column 11, K)
 selGroup.add_option("--sr", "--seqr", "--SEQR", "--seqrep", "--seq",action = "store", type = "string", dest = "seqr", 
                   help = "Sequencing replicates selected.",default="all")
-# Tag (Column 11, K)
+# Tag (Column 12, L)
 selGroup.add_option("--tag", "--TAG",action = "store", type = "string", dest = "tagg", 
                   help = "Tags selected. 'S' for Sequencing runs, 'Q' for Quality control runs",default="S")
-# User_ONYEN (Column 13, M)
+# User_ONYEN (Column 14, N)
 selGroup.add_option("-u", "--user", "--USER", "--onyen", "--ONYEN",action = "store", type = "string", dest = "user", 
                   help = "Users selected.\n",default="all")
 
@@ -149,7 +153,7 @@ parser.add_option_group(selGroup)
 
 outGroup = optparse.OptionGroup(parser, "Output Parameters",
                     "These options help customize the output directory. "
-                    "Structure is: HOMEDIR/PROJ/rna/NAME/<outputs>. "
+                    "Structure is: HOMEDIR/PROJ/chip/NAME/<outputs>. "
                     "These options let you control HOMEDIR and NAME. "
                     "PROJ is generated based on input samples. ")
 
@@ -159,9 +163,9 @@ outGroup.add_option("-n", "--n", "--name",action = "store", type = "string", des
 # Suffix: add a string to the end of the automatically generated name.
 outGroup.add_option("--suff", "--suffix", "--SUFF", "--SUFFIX",action = "store", type = "string", dest = "suff", 
                   help = "Suffix to append to generated output directory NAME.",default=None)
-# Home directory: directory where final output directory, files will be made (by default will build /PROJ/rna/outputdirectory).
+# Home directory: directory where final output directory, files will be made (by default will build /PROJ/chip/outputdirectory).
 outGroup.add_option("--home","--o", "--dir","--HOME","--OUT", "--DIR",action = "store", type = "string", dest = "home", 
-                  help = "Path to home directory which will house the output directory in ./PROJ/rna/outputdirectory",default=None)
+                  help = "Path to home directory which will house the output directory in ./PROJ/chip/outputdirectory",default=None)
 
 parser.add_option_group(outGroup)
 
@@ -178,8 +182,8 @@ runGroup.add_option("--temp", "--TEMP", "--keep", "--KEEP",action = "store", typ
                   help = "Toggle (T/F) whether to keep temporary files (FastQC, trimmed FastQ, etc.)",default="F")
 # Stage: pick the parts of the analysis you want to run (function to interpret???)
 runGroup.add_option("--stage", "--STAGE", "--S",action = "store", type = "string", dest = "stage", 
-                  help = "Select the stages of the code to run. Choose from 'QC' (create multiQC), trim' (create trimmed.fq), quant' (Salmon quant.sf files), 'align' (BAM files), 'signal' (bedgraphs/bigwigs, see --sigout), 'merge' (combine BAMs by Bio Rep for signal step), and 'splice' (MAJIQ).",
-                  default="QC,trim,align,quant,signal") 
+                  help = "Select the stages of the code to run. Choose from 'QC' (create multiQC), trim' (create trimmed.fq), 'align' (BAM files), 'peaks' (MACS2), 'signal' (bedgraphs/bigwigs, see --sigout), and 'merge' (combine BAMs by Bio Rep for signal step).",
+                  default="QC,trim,align,peaks,signal") 
 # Merge: choose what to match for BAM alignment merging (used to create merged signal tracks)
 runGroup.add_option("--merge", "--mergeby", "--MERGE", action = "store", type = "string", dest = "merge", 
                   help = "Select which columns to merge when creating sample alignments for combined signal tracks. Please use exact column name.",
@@ -201,42 +205,16 @@ cmdGroup = optparse.OptionGroup(parser, "Command Parameters",
                     "These options are passed directly to the programs used. "
                     "Examples: annotation files for Salmon, indices, MAJIQ settings.")
 
-# Annotation: GTF file for tx2gene
-cmdGroup.add_option("--ann", "--ANN", "--annotation", "--gtf", "--GTF",action = "store", type = "string", dest = "annt", 
-                  help = "Path to transcriptome annotation used to create tx2gene (default: GENCODE v.19)",
-                  default="/proj/phanstiel_lab/SHARE/genomes/GENCODE.v19/gencode.v19.annotation.gtf_withproteinids")
-# Kmer: kmer size for Salmon index
-cmdGroup.add_option("--kmer", "--KMER", "--k",action = "store", type = "string", dest = "kmer", 
-                  help = "kmer size; minimum acceptable length for a valid match during Salmon indexing (default: 31)",
-                  default="31")
-# Transcript: salmon index path
-cmdGroup.add_option("--trns", "--TRNS", "--transcript",action = "store", type = "string", dest = "trns", 
-                  help = "Path to Salmon-created transcript index (default: GENCODE v.19)",
-                  default="/proj/phanstiel_lab/SHARE/genomes/GENCODE.v19/salmon_index")
-# HiSat2Idx: HISAT2 index path
-cmdGroup.add_option("--hisatidx", "--HSIDX", "--hisat2idx", "--hisat2index",action = "store", type = "string", dest = "hisat2idx", 
-                  help = "Path to HISAT2-created index + prefix (default: HG19)",
-                  default="/proj/seq/data/HG19_UCSC/Sequence/HISAT2Index/genome")
-# MAJIQ config: MAJIQ config file path
-cmdGroup.add_option("--majConfig", "--mjqConfig", "--mjqcon", "--majcon",action = "store", type = "string", dest = "mjqcon", 
-                  help = "Path to custom MAJIQ configuration file. (Default: created using defaults, run config file)",
-                  default=None)
-# MAJIQ length: read length for MAJIQ
-cmdGroup.add_option("--length", "--readlength", "--readlen", "--len",action = "store", type = "string", dest = "length", 
-                  help = "Read length (required for MAJIQ; default = 150)",
-                  default="150")
-# MAJIQ genome: genome used for MAJIQ
-cmdGroup.add_option("--genome",action = "store", type = "string", dest = "genome", 
-                  help = "Genome used (required for MAJIQ; default = hg19)",
-                  default="hg19")
-# MAJIQ strandness: RNA strandness used for MAJIQ
-cmdGroup.add_option("--strand", "--strandness",action = "store", type = "string", dest = "strand", 
-                  help = "Strandness. Choose from 'forward', 'reverse', and 'None' (required for MAJIQ; default = forward)",
-                  default="forward")
-# MAJIQ annotation: transcriptome annotation used for MAJIQ, must be GFF3
-cmdGroup.add_option("--mjqann", "--MJQANN", "--majiqannotation", "--gff3", "--GFF3",action = "store", type = "string", dest = "gff3", 
-                  help = "Path to transcriptome annotation GFF3 file used for MAJIQ (default: hg19)",
-                  default="/proj/phanstiel_lab/SHARE/genomes/GENCODE.v19/gencode.v19.annotation.gtf_withproteinids")
+# bwaidx: BWA index path
+cmdGroup.add_option("--bwaidx", "--BWAIDX", "--BWAidx", "--bwaindex",action = "store", type = "string", dest = "bwaindex", 
+                  help = "Path to BWA-created index + prefix (default: HG19)",
+                  default="/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa")
+
+# macs2: MACS2 peakcall settings
+cmdGroup.add_option("--macs2", "--macs2settings", "--MACS2", "--MACS2settings",action = "store", type = "string", dest = "macsSettings", 
+                  help = "Setting passed to macs2 peakcall (excluding file input and output)",
+                  default="-f BAM -q 0.01 -g hs --nomodel --shift 0 --extsize 200 --keep-dup all -B --SPMR")
+
 
 parser.add_option_group(cmdGroup)
 
@@ -250,6 +228,7 @@ parser.add_option_group(cmdGroup)
 
 # Selection parameters
 PROJ = optionLister(options.proj)
+TARG = optionLister(options.targ)
 CELL = optionLister(options.cell)
 GENO = optionLister(options.geno)
 COND = optionLister(options.cond)
@@ -277,13 +256,8 @@ RERUN = options.rerun
 ANNT = options.annt
 KMER = options.kmer
 TRNS = options.trns
-HSIDX = options.hisat2idx
-MJQCON = options.mjqcon
-LENGTH = options.length
-GENOME = options.genome
-STRAND = options.strand
-MJQANN = options.gff3
-
+BWAIDX = options.bwaindex
+MACS2settings = options.macsSettings
 
 
 # EDIT/INTERPRET VARIABLES 
@@ -295,7 +269,7 @@ if "all" in TAGG or "A" in TAGG:
 
 # Interpret alternative STAGE settings
 if "all" in STAGE:
-    STAGE = ["qc", "trim", "quant", "align", "signal", "splice", "merge"]
+    STAGE = ["qc", "trim", "align", "signal", "peaks", "merge"]
 
 # Interpret alternative SIGOUT settings
 if "all" in SIGOUT:
@@ -336,10 +310,14 @@ if "all" in PROJ and MANUAL == None:
 if len(PROJ) > 1:
     parser.error('Please select only one project.')
 
+# ...if no target listed (unless manual config supplied with MANUAL)
+if "all" in TARG and MANUAL == None:
+    parser.error('Please select an IP target.')
+
 # ...if stage chosen is not viable
 for item in STAGE:
-    if item not in ['QC', 'trim', 'align', 'quant', 'signal', 'splice', 'merge']:
-        parser.error("Please choose from 'QC', trim', quant', 'align', 'signal', 'merge', and 'splice' for --stage.")
+    if item not in ['QC', 'trim', 'align', 'signal', 'peaks', 'merge']:
+        parser.error("Please choose from 'QC', trim', 'peaks', 'align', 'signal', and 'merge' for --stage.")
 
 
 
@@ -349,6 +327,7 @@ for item in STAGE:
 # Turn selection parameter inputs into dictionary
 selectors = {
     'Project':PROJ,
+    'Target':TARG,
     'Cell_Type':CELL,
     'Genotype':GENO,
     'Condition':COND,
@@ -376,7 +355,7 @@ selectors = dict((k,v) for k,v in selectors.items() if 'all' not in v)
 configFile = ""
 if MANUAL == None:
     for file in os.listdir(CDIR):
-        if file.endswith("rna.tsv"):
+        if file.endswith("chip.tsv"):
             configFile = CDIR + file
 else:
     configFile = MANUAL
@@ -412,7 +391,7 @@ subsetter['Selected'] = allTrue
 config = config.loc[subsetter.Selected,:]
 
 # ERROR if no indices where all inputs match
-if subsetter.Selected.any() == False and MANUAL is None: # If it is false that there are any True values in "Selected" column
+if subsetter.Selected.any() == False: # If it is false that there are any True values in "Selected" column
     parser.error("No samples were found matching input parameters. Try checking config file at " + configFile)
 
 
@@ -427,8 +406,8 @@ if "merge" in STAGE:
 		if item not in header:
 			parser.error(item + " not found in config file. Please choose from following column names for --merge. " + str(header))
 	# Remove unique columns: Unique_ID (0), Name (1) 
-	# Remove irrelevant columns for merging: everything after Exclude (12-24)
-	header = header[2:11]
+	# Remove irrelevant columns for merging: everything after Exclude (13-24)
+	header = header[2:12]
 	# Remove columns being merged (set by MERGE)
 	for item in MERGE:
 		header.remove(item)
@@ -437,9 +416,9 @@ if "merge" in STAGE:
 	for n in range(len(config)):               
 		# for each row in config...
 		row = config.iloc[n]
-		# ...make a merged sample name based on everything that ISN'T merged, plus the "RNA" tag
+		# ...make a merged sample name based on everything that ISN'T merged, plus the "ChIP" tag
 		rowList = map(str, row[header])
-		rowList.insert(1,'RNA')
+		rowList.insert(1,'ChIP')
 		mergeName = "_".join(rowList)   
 		# ...build a dataframe   
 		merger = pd.DataFrame()                
@@ -465,11 +444,11 @@ if "merge" in STAGE:
 
 # Name of final output directory
 if NAME == None:
-    NAME = namer(['Project', 'Cell_Type', 'Genotype', 'Condition', 'Time'],['Tag'])
+    NAME = namer(['Project', 'Target', 'Cell_Type', 'Genotype', 'Condition', 'Time'],['Tag'])
     if SUFF is not None:
         NAME = "_".join([NAME, SUFF])
 
-# Name of directory within homeDir/***** where output directories sit; named after project
+# Name of directory within homeDir/projects/***** where output directories sits; named after project
 PROJNAME = "".join(map(str, set(config["Project"])))
 
 
@@ -524,28 +503,15 @@ print "\n"
 # Command parameters
 print "COMMAND PARAMETERS"
 print "==================\n"    
-if "quant" in STAGE:
-    print "Salmon/TxImport"    
-    print "---------------"
-    print "Annotation file  = " + ANNT
-    print "Kmer length      = " + KMER
-    print "Transcript index = " + TRNS
-    print "\n"
 if "align" in STAGE:
-    print "HISAT2"    
-    print "------"
-    print "Index            = " + HSIDX
+    print "BWA MEM"    
+    print "-------"
+    print "Index            = " + BWAIDX
     print "\n"
-if "splice" in STAGE:
-    print "MAJIQ"    
+if "peaks" in STAGE:
+    print "MACS2"    
     print "-----"
-    if MJQCON == None:
-        print "Config file created in /config based on:"
-        print "Read length      = " + LENGTH
-        print "Genome           = " + GENOME
-        print "Strandness       = " + STRAND
-    else:
-        print "Config file      = " + MJQCON
+    print "MACS2 settings   = " + MACSsettings
     print "\n"
 
 # Output parameters
@@ -558,7 +524,7 @@ if HOME == None:
 print "*****         !!! DOUBLE CHECK OUTPUT DIRECTORY STRUCTURE !!!            *****"
 print "------------------------------------------------------------------------------"
 print "Home directory   = " + HOME
-print "Output directory = " + HOME + "/" + PROJNAME + "/rna/" + NAME
+print "Output directory = " + HOME + "/" + PROJNAME + "/chip/" + NAME 
 print "\n\n\n"
 
 
@@ -589,8 +555,8 @@ print "Making directories..."
 print "\n\n"
 
 
-# Build up to output directory: HOME/PROJNAME/rna/
-procPath = HOME + "/" + PROJNAME + "/rna/" + NAME 
+# Build up to output directory: HOME/project/PROJNAME/chip/
+procPath = HOME + "/" + PROJNAME + "/chip/" + NAME 
 
 print "Making output directory:"
 print "mkdir -p " + procPath
@@ -611,8 +577,7 @@ directories = {
     'QC':procPath + "/QC",    
     'align':procPath + "/aligned",
     'signal':procPath + "/signal",
-    'quant':procPath + "/quant",
-    'splice':procPath + "/splice"
+    'peaks':procPath + "/peaks"
     }
 
 baseDirectories = ['fastq', 'config', 'debug', 'scripts']
@@ -646,10 +611,9 @@ if "bigwig" in SIGOUT:
 modules = {
     'QC':{"FASTQC":FASTQCvers, "MultiQC":multiQCvers},
     'trim':{"Trim Galore!":TrimVers},
-    'quant':{"Salmon":SalmonVers, "R":rVers},
     'align':{"HISAT2":hisatVers, "Samtools":samVers},
     'signal':signalDict,    
-    'splice':{"MAJIQ":majiqVers},
+    'peaks':{"macs":MACSvers},
     'merge':{"Samtools":samVers}
     }
 
@@ -694,26 +658,6 @@ if "merge" in STAGE:
 
 
 
-# MAKE MAJIQ CONFIG FILE 
-# ======================
-
-# As accoriding to here: https://majiq.biociphers.org/docs/TUTORIAL%20-%20V1.5.pdf#conf_file
-if "splice" in STAGE and MJQCON == None:
-    MJQCON = directories['config'] + "/MAJIQconfig_" + NAME + "_" + stamp + ".txt"
-    majiqConfig = open(MJQCON, "w")
-    majiqConfig.write(
-        "[info]\n" + 
-        "readlen=" + LENGTH + "\n" +
-        "samdir=" + directories['align'] + "\n" + 
-        "genome=" + GENOME + "\n" +
-        "strandness=" + STRAND + "\n" + 
-        "\n" +
-        "[experiments]\n" + 
-        "Group=" + "_sorted,".join(config['Name']) + "_sorted")
-    majiqConfig.close()
-
-
-
 # POPULATE /FASTQ W LINKS 
 # =======================
 
@@ -728,8 +672,8 @@ for n in range(len(config)):
     nRead2 = config.iloc[n]["Read2"]
         
     # Path to the raw .fastq.gz in the original sequencing directory # UPDATE AFTER REWORKING CLUSTER???
-    #rawRead1 = "/proj/phanstiel_lab/Data/Sequencing/fastq/project/" + nProj + "/rna/" + nPath + nRead1
-    #rawRead2 = "/proj/phanstiel_lab/Data/Sequencing/fastq/project/" + nProj + "/rna/" + nPath + nRead2
+    #rawRead1 = "/proj/phanstiel_lab/Data/Sequencing/fastq/project/" + nProj + "/chip/" + nPath + nRead1
+    #rawRead2 = "/proj/phanstiel_lab/Data/Sequencing/fastq/project/" + nProj + "/chip/" + nPath + nRead2
 
     # For when whole path is defined in config file... UPDATE LATER????
     rawRead1 = nPath + nRead1
@@ -836,46 +780,27 @@ for n in range(len(config)):
             'mv ' + directories['fastq'] + '/' + nName + '_R1*_trimming_report.txt ' + directories['fastq'] + '/' + nName + '_1.fastq_trimming_report.txt\n' +
             'mv ' + directories['fastq'] + '/' + nName + '_R2_val_2.* ' + directories['fastq'] + '/' + nName + '_2_trimmed.fq.gz\n' +
             'mv ' + directories['fastq'] + '/' + nName + '_R2*_trimming_report.txt ' + directories['fastq'] + '/' + nName + '_2.fastq_trimming_report.txt\n')
-
-    if "quant" in STAGE:
-        file.write(
-            '\n\n' +
-            '# STAGE: QUANT (Salmon)\n' +
-            '# =====================\n' +
-            '\n' +
-            'printf "Quantifying transcripts...\\n"\n' +
-            'printf "==========================\\n"\n' +
-            '\n' + 
-            'date\n' +
-            'module add salmon/' + SalmonVers + "\n" +
-            '\n')
-
-        if RERUN == False and os.path.isfile(directories['quant'] + '/' + nName + '/quant.sf'):
-            file.write('printf "Salmon quant.sf files already exist for sample ' + nName + '\\n"\n' +
-                '# COMMAND USED: \n#')
-
-        file.write('salmon quant --writeUnmappedNames --threads 1 -i ' + TRNS + ' -l A -1 ' + directories['fastq'] + '/' + nName + '_1_trimmed.fq.gz'+ ' -2 ' + directories['fastq'] + '/' + nName + '_2_trimmed.fq.gz' + ' -o ' + directories['quant'] + '/' + nName + '\n')
-
     
     if "align" in STAGE:
         file.write(
             '\n\n' +
-            '# STAGE: ALIGN (HISAT2, Samtools)\n' +
-            '# ===============================\n' +
+            '# STAGE: ALIGN (BWA, Samtools, PicardTools)\n' +
+            '# =========================================\n' +
             '\n' +
-            'printf "Creating alignment with HISAT2...\\n"\n' +
-            'printf "=================================\\n"\n' +
+            'printf "Creating alignment with BWA...\\n"\n' +
+            'printf "==============================\\n"\n' +
             '\n' + 
             'date\n' +
-            'module add hisat2/' + hisatVers + "\n" +
+            'module add bwa/' + bwaVers + "\n" +
             'module add samtools/' + samVers + "\n" +
+            'module add java/' + javaVers + "\n" +
             '\n')
 
         if RERUN == False and os.path.isfile(directories['align'] + '/' + nName + '_sorted.bam'):
             file.write('printf "Sorted BAM file already exists for sample ' + nName + '\\n"\n'+
                        '# COMMAND USED: \n#')
 
-        file.write('hisat2 -q -x ' + HSIDX + ' -1 ' + directories['fastq'] + '/' + nName + '_1_trimmed.fq.gz -2 ' + directories['fastq'] + '/' + nName + '_2_trimmed.fq.gz | samtools view -u | samtools sort -o ' + directories['align'] + '/' + nName +'_sorted.bam\n')
+        file.write('bwa mem -t 8 ' + BWAIDX + ' ' + directories['fastq'] + '/' + nName + '_1_trimmed.fq.gz ' + directories['fastq'] + '/' + nName + '_2_trimmed.fq.gz | samtools view -u | samtools sort -o ' + directories['align'] + '/' + nName + '_sorted.bam\n')
              
         file.write(
             '\n' + 
@@ -893,17 +818,31 @@ for n in range(len(config)):
 
         file.write(
             '\n' +
+            'printf "Removing duplicates with PicardTools...\\n"\n' +
+            'printf "=======================================\\n"\n' +
+            '\n'
+            'date\n' +
+            '\n')
+
+        if RERUN == False and os.path.isfile(directories['align'] + '/' + nName + '_filter_sorted.bam'):
+            file.write('printf "Sorted BAM file already exists for sample ' + nName + '\\n"\n'+
+                       '# COMMAND USED: \n#')
+
+        file.write('java -Xmx16g -jar /nas/longleaf/apps/picard/2.10.3/picard-2.10.3/picard.jar MarkDuplicates I=' + directories['align'] + '/' + nName + '_sorted.bam O=' + directories['align'] + '/' + nName + '_filter_sorted.bam M=' + directories['align'] + '/' + nName + '_dup_metrics.txt REMOVE_SEQUENCING_DUPLICATES=true\n')
+
+        file.write(
+            '\n' +
             'printf "Indexing BAM files with Samtools...\\n"\n' +
             'printf "===================================\\n"\n' +
             '\n'
             'date\n' +
             '\n')
 
-        if RERUN == False and os.path.isfile(directories['align'] + '/' + nName + '_sorted.bam.bai'):
+        if RERUN == False and os.path.isfile(directories['align'] + '/' + nName + '_filter_sorted.bam.bai'):
             file.write('printf "BAM indices already conducted for sample ' + nName + '\\n"\n'+
                        '# COMMAND USED: \n#')
 
-        file.write('samtools index ' + directories['align'] + '/' + nName + '_sorted.bam \n')
+        file.write('samtools index ' + directories['align'] + '/' + nName + '_filter_sorted.bam \n')
 
     if TEMP == False:
         file.write(
@@ -916,7 +855,27 @@ for n in range(len(config)):
             '\n' +
             'date\n' +
             'rm ' + directories['fastq'] + '/' + nName + '_1_trimmed.fq.gz \n' +
-            'rm ' + directories['fastq'] + '/' + nName + '_2_trimmed.fq.gz \n')
+            'rm ' + directories['fastq'] + '/' + nName + '_2_trimmed.fq.gz \n' +
+            'rm ' + directories['align'] + '/' + nName + '_sorted.bam')
+
+    if "peaks" in STAGE:
+        file.write(
+            '\n\n' +
+            '# STAGE: PEAKS (MACS2)\n' +
+            '# ====================\n' +
+            '\n' +
+            'printf "Calling peaks with MACS2...\\n"\n' +
+            'printf "===========================\\n"\n' +
+            '\n' + 
+            'date\n' +
+            'module add macs/' + MACSvers + "\n" +
+            '\n')
+
+        if RERUN == False and os.path.isfile(directories['peaks'] + '/' + nName + '.narrowPeak'):
+            file.write('printf "Peak calls already exist for sample ' + nName + '\\n"\n'+
+                       '# COMMAND USED: \n#')
+
+        file.write('macs2 callpeak -t ' + directories['align'] + '/' + nName + '_filter_sorted.bam ' + MACSsettings + ' --outdir ' + directories['peaks'] + ' -n ' + nName + '\n')
 
     if "signal" in STAGE:
         file.write(
@@ -1046,6 +1005,25 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
     
             file.write('samtools index ' + directories['align'] + '/MERGE_' + mergeName + '.bam \n')
 
+            if "peaks" in STAGE:
+                file.write(
+                    '\n\n' +
+                    '# STAGE: PEAKS (MACS2) - merged\n' +
+                    '# =============================\n' +
+                    '\n' +
+                    'printf "Calling peaks with MACS2...\\n"\n' +
+                    'printf "===========================\\n"\n' +
+                    '\n' + 
+                    'date\n' +
+                    'module add macs/' + MACSvers + "\n" +
+                    '\n')
+
+                if RERUN == False and os.path.isfile(directories['peaks'] + '/' + mergeName + '_peaks.narrowPeak'):
+                    file.write('printf "Peak calls already exist for samples: ' + ", ".join(sampleList) + '\\n"\n'+
+                               '# COMMAND USED: \n#')
+
+                file.write('macs2 callpeak -t ' + directories['align'] + '/MERGE_' + mergeName + '.bam ' + MACSsettings + ' --outdir ' + directories['peaks'] + ' -n ' + mergeName + '\n')
+
             if "signal" in STAGE:
                 file.write(
                     '\n\n' +
@@ -1118,8 +1096,8 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
 # FINAL SCRIPTS 
 # =============
 
-# Separate script for MultiQC if "QC", tximport if "quant" (final):
-if "QC" in STAGE or "quant" in STAGE:
+# Separate script for MultiQC if "QC", tximport if "peaks" (final):
+if "QC" in STAGE or "peaks" in STAGE:
 
     # Make the script
     script = directories['scripts'] + "/FINAL_" + NAME + "_" + stamp + ".SBATCH"
@@ -1171,37 +1149,37 @@ if "QC" in STAGE or "quant" in STAGE:
                 'rm ' + directories['QC'] + '/*fastqc.html \n' +
                 'rm ' + directories['fastq'] + '/*fastq_trimming_report.txt \n')
 
-    if "quant" in STAGE:
+    if "peaks" in STAGE:
         file.write(
         '\n\n' +
-        '# STAGE: QUANT SUMMARY (txImport)\n' +
-        '# ===============================\n' +
+        '# STAGE: PEAK READ COUNT MATRIX (bedtools)\n' +
+        '# ========================================\n' +
         '\n' +
-        'printf "Generating tximport object...\\n"\n' +
-        'printf "=============================\\n"\n' +
+        'printf "Merging peaks with bedtools...\\n"\n' +
+        'printf "==============================\\n"\n' +
         '\n' +
         'date\n' +
-        'module add r/' + rVers + "\n" +
-        'Rscript /proj/phanstiel_lab/software/RNApipe/txImporter.R ' + directories['config'] + "/config_"+ NAME + "_" + stamp + ".tsv "  + ANNT + " " + directories['quant'] + " " + NAME)
+        'module add bedtools/' + bedVers + "\n")
 
-    if "splice" in STAGE:
+        if RERUN == False and os.path.isfile(directories['peaks'] + '/' + NAME + '_peakMerge.narrowPeak'):
+            file.write('printf "Peak calls already exist for samples: ' + ", ".join(sampleList) + '\\n"\n'+
+              '# COMMAND USED: \n#')
+
+        file.write('''cat ''' + directories['peaks'] + '''/*.narrowPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_peakMerge.narrowPeak \n''')
+
         file.write(
-            '\n\n' +
-            '# STAGE: SPLICE (MAJIQ)\n' +
-            '# =====================\n' +
             '\n' +
-            'printf "Running MAJIQ Builder (creating LSV)...\\n"\n' +
-            'printf "=======================================\\n"\n' + 
-            '\n' +
+            'printf "Creating count matrix with bedtools...\\n"\n' +
+            'printf "===================================\\n"\n' +
+            '\n'
             'date\n' +
-            'module add majiq/' + majiqVers + "\n" +
             '\n')
 
-        if RERUN == False and os.path.isfile(directories['splice'] + '/*_sorted.majiq') and os.path.isfile(directories['splice'] + '/*_sortedsplicegraph.sql'):
-            file.write('printf "MAJIQ files already exist for project.\\n"\n'+
-                   '# COMMAND USED: \n#')
+        if RERUN == False and os.path.isfile(directories['peaks'] + '/' + NAME + '_counts.tsv'):
+            file.write('printf "Peak counts already summarized"\n'+
+                       '# COMMAND USED: \n#')
 
-        file.write('majiq build ' + MJQANN + ' -c ' + MJQCON + ' -j 8 -o ' + directories['splice'] + '\n')
+        file.write('bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_peakMerge.narrowPeak' + ' > ' + directories['peaks'] + '/' + NAME + '_counts.tsv \n')
 
     file.close()
 

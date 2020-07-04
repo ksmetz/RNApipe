@@ -7,9 +7,12 @@ Phanstiel lab (temporary?) pipeline for paired-end RNAseq data.
 This pipeline is incorporated with the lab Sequencing Data sheet. The idea is that you run the pipeline without providing your own sample sheet, but by selecting your samples of interest from the Master sheet using [Input Parameters](#input-parameters). Think of it like filtering the spreadsheet.
 
 You can select [what parts of the pipeline to run](#run-parameters), depending on the desired outputs. The major outputs are:
-1. quantification files used for differential analysis in R (does NOT require alignment; <code>--stage trim,quant</code>)
-2. QC summary html files detailing quality of samples (<code>--stage QC</code>)
-3. signal tracks for plotting (DOES require alignment; <code>--stage trim,align,signal,merge</code>)
+1. quantification files used for differential analysis in R \
+(does NOT require alignment; <code>--stage trim,quant</code>)
+2. QC summary html files detailing quality of samples \
+(<code>--stage QC</code>)
+3. signal tracks for plotting \
+(DOES require alignment; <code>--stage trim,align,signal,merge</code>)
 
 Unfortunately, the code is super cumbersome and it's also written in python 2 (!!!). [I might update it](#changes-to-make), so feel free to message me with suggestions, but we will probably just eventually replace RNApipe with a more streamlined and light-weight pipeline (snakemake, or maybe just a bash script or something). But! It's still functional, and it has a lot of heart, and isn't that what matters?
 
