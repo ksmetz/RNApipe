@@ -130,10 +130,10 @@ selGroup.add_option("--tr", "--techr", "--TECR", "--techrep", "--tech",action = 
 # Seq_Rep (Column 10,J)
 selGroup.add_option("--sr", "--seqr", "--SEQR", "--seqrep", "--seq",action = "store", type = "string", dest = "seqr", 
                   help = "Sequencing replicates selected.",default="all")
-# Tag (Column 11,K)
+# Tag (Column 11, K)
 selGroup.add_option("--tag", "--TAG",action = "store", type = "string", dest = "tagg", 
                   help = "Tags selected. 'S' for Sequencing runs, 'Q' for Quality control runs",default="S")
-# User_ONYEN (Column 13,M)
+# User_ONYEN (Column 13, M)
 selGroup.add_option("-u", "--user", "--USER", "--onyen", "--ONYEN",action = "store", type = "string", dest = "user", 
                   help = "Users selected.\n",default="all")
 
@@ -149,7 +149,7 @@ parser.add_option_group(selGroup)
 
 outGroup = optparse.OptionGroup(parser, "Output Parameters",
                     "These options help customize the output directory. "
-                    "Structure is: HOMEDIR/project/PROJ/rna/NAME/proc/<outputs>. "
+                    "Structure is: HOMEDIR/PROJ/rna/NAME/<outputs>. "
                     "These options let you control HOMEDIR and NAME. "
                     "PROJ is generated based on input samples. ")
 
@@ -159,9 +159,9 @@ outGroup.add_option("-n", "--n", "--name",action = "store", type = "string", des
 # Suffix: add a string to the end of the automatically generated name.
 outGroup.add_option("--suff", "--suffix", "--SUFF", "--SUFFIX",action = "store", type = "string", dest = "suff", 
                   help = "Suffix to append to generated output directory NAME.",default=None)
-# Home directory: directory where final output directory, files will be made (by default will build /projects/PROJ/rna/proc/outputdirectory).
+# Home directory: directory where final output directory, files will be made (by default will build /PROJ/rna/outputdirectory).
 outGroup.add_option("--home","--o", "--dir","--HOME","--OUT", "--DIR",action = "store", type = "string", dest = "home", 
-                  help = "Path to home directory which will house the output directory in ./projects/PROJ/rna/proc/outputdirectory",default=None)
+                  help = "Path to home directory which will house the output directory in ./PROJ/rna/outputdirectory",default=None)
 
 parser.add_option_group(outGroup)
 
@@ -376,7 +376,7 @@ selectors = dict((k,v) for k,v in selectors.items() if 'all' not in v)
 configFile = ""
 if MANUAL == None:
     for file in os.listdir(CDIR):
-        if file.endswith(".tsv"):
+        if file.endswith("rna.tsv"):
             configFile = CDIR + file
 else:
     configFile = MANUAL
@@ -469,7 +469,7 @@ if NAME == None:
     if SUFF is not None:
         NAME = "_".join([NAME, SUFF])
 
-# Name of directory within homeDir/projects/***** where /proc/outputdirectory sits; named after project
+# Name of directory within homeDir/***** where output directories sit; named after project
 PROJNAME = "".join(map(str, set(config["Project"])))
 
 
@@ -558,7 +558,7 @@ if HOME == None:
 print "*****         !!! DOUBLE CHECK OUTPUT DIRECTORY STRUCTURE !!!            *****"
 print "------------------------------------------------------------------------------"
 print "Home directory   = " + HOME
-print "Output directory = " + HOME + "/project/" + PROJNAME + "/rna/" + NAME + "/proc"
+print "Output directory = " + HOME + "/" + PROJNAME + "/rna/" + NAME
 print "\n\n\n"
 
 
@@ -589,8 +589,8 @@ print "Making directories..."
 print "\n\n"
 
 
-# Build up to output directory: HOME/project/PROJNAME/rna/
-procPath = HOME + "/project/" + PROJNAME + "/rna/" + NAME + "/proc"
+# Build up to output directory: HOME/PROJNAME/rna/
+procPath = HOME + "/" + PROJNAME + "/rna/" + NAME 
 
 print "Making output directory:"
 print "mkdir -p " + procPath
@@ -778,8 +778,8 @@ for n in range(len(config)):
         '#SBATCH -N 1\n' +
         '#SBATCH --mem=16g \n' +
         '#SBATCH -t 5760\n' +
-        '#SBATCH -o ' + directories['debug'] + '/core_' + nName + '_' + stamp + '.log.out\n' + 
-        '#SBATCH -e ' + directories['debug'] + '/core_' + nName + '_' + stamp + '.log.err\n' +
+        '#SBATCH -o ' + directories['debug'] + '/core_' + nName + '_' + stamp + '-%j.log.out\n' + 
+        '#SBATCH -e ' + directories['debug'] + '/core_' + nName + '_' + stamp + '-%j.log.err\n' +
         '\n' +
         '#----------------------------------------------------------------------------#\n')
 
@@ -1008,8 +1008,8 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
                 '#SBATCH -N 1\n' +
                 '#SBATCH --mem=16g \n' +
                 '#SBATCH -t 5760\n' +
-                '#SBATCH -o ' + directories['debug'] + '/merge_' + mergeName + '_' + stamp + '.log.out\n' + 
-                '#SBATCH -e ' + directories['debug'] + '/merge_' + mergeName + '_' + stamp + '.log.err\n' +
+                '#SBATCH -o ' + directories['debug'] + '/merge_' + mergeName + '_' + stamp + '-%j.log.out\n' + 
+                '#SBATCH -e ' + directories['debug'] + '/merge_' + mergeName + '_' + stamp + '-%j.log.err\n' +
                 '\n' +
                 '#----------------------------------------------------------------------------#\n')
             
@@ -1133,8 +1133,8 @@ if "QC" in STAGE or "quant" in STAGE:
         '#SBATCH -N 1\n' +
         '#SBATCH --mem=16g \n' +
         '#SBATCH -t 5760\n' +
-        '#SBATCH -o ' + directories['debug'] + '/final_' + NAME + '_' + stamp + '.log.out\n' + 
-        '#SBATCH -e ' + directories['debug'] + '/final_' + NAME + '_' + stamp + '.log.err\n' +
+        '#SBATCH -o ' + directories['debug'] + '/final_' + NAME + '_' + stamp + '-%j.log.out\n' + 
+        '#SBATCH -e ' + directories['debug'] + '/final_' + NAME + '_' + stamp + '-%j.log.err\n' +
         '\n' +
         '#----------------------------------------------------------------------------#\n')
 

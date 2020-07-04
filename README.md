@@ -1,17 +1,17 @@
 # RNApipe
 Katie Metz Reed\
-*Last Updated: 07-02-2020*
+*Last Updated: 07-04-2020*
 
 Phanstiel lab (temporary?) pipeline for paired-end RNAseq data.
 
 This pipeline is incorporated with the lab Sequencing Data sheet. The idea is that you run the pipeline without providing your own sample sheet, but by selecting your samples of interest from the Master sheet using [Input Parameters](#input-parameters). Think of it like filtering the spreadsheet.
 
 You can select [what parts of the pipeline to run](#run-parameters), depending on the desired outputs. The major outputs are:
-1. quantification files used for differential analysis in R [does NOT require alignment]
-2. QC summary html files detailing quality of samples
-3. signal tracks for plotting [does require alignment]
+1. quantification files used for differential analysis in R (does NOT require alignment; <code>--stage trim,quant</code>)
+2. QC summary html files detailing quality of samples (<code>--stage QC</code>)
+3. signal tracks for plotting (DOES require alignment; <code>--stage trim,align,signal,merge</code>)
 
-Unfortunately the [output structures](#output-parameters) and some other aspects are outdated and rigid. It's also written in python 2 (!!!). [I might update it](#changes-to-make), but we will probably just eventually replace RNApipe with a more streamlined and light-weight pipeline (snakemake, or maybe just a bash script or something). But! It's still functional, and it has a lot of heart, and isn't that what matters?
+Unfortunately, the code is super cumbersome and it's also written in python 2 (!!!). [I might update it](#changes-to-make), so feel free to message me with suggestions, but we will probably just eventually replace RNApipe with a more streamlined and light-weight pipeline (snakemake, or maybe just a bash script or something). But! It's still functional, and it has a lot of heart, and isn't that what matters?
 
 #### TABLE OF CONTENTS
 - [Quickstart](#quickstart)
@@ -37,11 +37,11 @@ Unfortunately the [output structures](#output-parameters) and some other aspects
 
 2. **Make sure the most up-to-date sample sheet is on the cluster.**
 	- The sample sheet lives on the cluster, here:\
-	 <code>/proj/phanstiel_lab/software/RNApipe/config/SequencingData_YYYY-MM-DD.tsv</code>
+	 <code>/proj/phanstiel_lab/software/RNApipe/config/SequencingData_YYYY-MM-DD_rna.tsv</code>
 	- Check that the date of the sample sheet is past when you entered your info
 	- If not, run the following commands to upload it:
 		- <code>module load launch_pipeline</code>
-		- <code>launch googleSync</code>
+		- <code>launch googleSync rna</code>
 
 3. **Log onto longleaf using your ONYEN**
 
@@ -131,20 +131,18 @@ Alternatively, to run these samples with a manual sheet, you could make a sheet 
 By default, the pipeline will create an output directory relative to where the program is run. Typically, you will move to the user directory at <code>/proj/phanstiel_lab/users/ONYEN</code>, and it will create the following output directory structure (based on the parts of the pipeline run; see [Detailed Usage: Run Parameters](#run-parameters)):
 ```bash
 . {HOME} # PWD, or path set by --home
-└── project
-    └── {PROJ} # Based off 'Project' column in sample sheet
-        └── rna
-            └── {NAME} # Auto-generated OR set with --name, appended with --suffix
-                └── proc
-                    ├── config    # Subset samplesheet used; merged sequence info sheet
-                    ├── debug     # Standard out/error log files
-                    ├── fastq     # Links to fastq files used
-                    ├── scripts   # SLURM scripts written and used
-                    ├── (aligned) # BAM + BAI files
-                    ├── (QC)      # MultiQC summary HTML report
-                    ├── (quant)   # quant.sf files, tximport .RDS for use in DESeq2
-                    ├── (signal)  # Signal tracks (bedgraphs and/or bigwigs)
-                    └── (splice)  # LSV + other MAJIQ files
+└── {PROJ} # Based off 'Project' column in sample sheet
+    └── rna
+        └── {NAME} # Auto-generated OR set with --name, appended with --suffix
+             ├── config    # Subset samplesheet used; merged sequence info sheet
+             ├── debug     # Standard out/error log files
+             ├── fastq     # Links to fastq files used
+             ├── scripts   # SLURM scripts written and used
+             ├── (aligned) # BAM + BAI files
+             ├── (QC)      # MultiQC summary HTML report
+             ├── (quant)   # quant.sf files, tximport .RDS for use in DESeq2
+             ├── (signal)  # Signal tracks (bedgraphs and/or bigwigs)
+             └── (splice)  # LSV + other MAJIQ files
 ```
 
 #### Defaults
@@ -317,13 +315,15 @@ Run only one time for the entire samplesheet
 
 There are a lot of issues and frustrations with RNApipe in its current form. I'm not sure if I will ever edit it, or if we will just plan to replace it with a simpler version down the road. However, in case I do ever have a chance to fix some things, I wanted to keep a list of what needs addressing - either for edits or just to keep in mind for future pipelines. If you have any suggestions or bugs that aren't on the list let me know!
 
-- **MAJOR:** Add in strand-specific signal tracks.\
-***NOTE: I added this in as of 07/02/2020! Only for bigwigs. But it is UNTESTED, so be warned!***
-- Revamp the output structure to not have so many dang nested directories!!!!
+- ~~**MAJOR:** Add in strand-specific signal tracks.~~\
+***Updated 07/02/2020. NOTE: Only for bigwigs. Also, this code is UNTESTED, so be warned!***
+- ~~Revamp the output structure to not have so many dang nested directories!!!!~~\
+***Updated 07/04/2020***
 - Allow for running on truly manual samplesheets (without all the standard columns required)
 - Probably can just get rid of the bedgraph option for signal tracks? Maybe not, as they are more human readable. If you want to plot things in R or IGV though, bigwig is the way to go 100% !
 - Reconsider memory/node requirements?
 - Consider making MERGE jobs wait only on their respective samples, rather than waiting for all CORE jobs to finish
-- Add SLURM job IDs to log files
+- ~~Add SLURM job IDs to log files~~\
+***Updated 07/04/2020***
 
 [Back to Top](#table-of-contents)
