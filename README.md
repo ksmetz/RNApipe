@@ -16,6 +16,8 @@ You can select [what parts of the pipeline to run](#run-parameters), depending o
 
 Unfortunately, the code is super cumbersome and it's also written in python 2 (!!!). [I might update it](#changes-to-make), so feel free to message me with suggestions, but we will probably just eventually replace RNApipe with a more streamlined and light-weight pipeline (snakemake, or maybe just a bash script or something). But! It's still functional, and it has a lot of heart, and isn't that what matters?
 
+***New!!!*** We now have ATACpipe and ChIPpipe as well, for running paired-end data of other types! Usage will be very similar overall, but see the section on [Variations: ATACpipe and ChIPpipe](#variations-atacpipe-and-chippipe) for more details.
+
 #### TABLE OF CONTENTS
 - [Quickstart](#quickstart)
 - [Detailed Usage](#detailed-usage)
@@ -28,7 +30,6 @@ Unfortunately, the code is super cumbersome and it's also written in python 2 (!
 	- [MERGE scripts](#merge-scripts)
 	- [FINAL scripts](#final-scripts)
 - [Variations: ATACpipe and ChIPpipe](#variations-atacpipe-and-chippipe)
-	- [Quickstart](#atacchip-quickstart)
 	- [Input Parameters](#atacchip-input-parameters)
 	- [Output Parameters](#atacchip-output-parameters)
 	- [Run Parameters](#atacchip-run-parameters)
@@ -41,34 +42,35 @@ Unfortunately, the code is super cumbersome and it's also written in python 2 (!
 
 1. **Make sure your sample info is entered into the "Sequencing Data" spreadsheet on the lab Google Drive**
 	- Edit *your copy* of the sheet (if you don't have one, ask Katie or [make your own](https://docs.google.com/spreadsheets/d/13dfdyM4HxgsEoFhiuDqrohGfLulVtxYHqSK1dA29Xvw/edit#gid=2031315238))
-	- The [master sheet](https://docs.google.com/spreadsheets/d/14-j6QiyzX4oV378CgQhb6btfaaopbZTRXew1FxN1vag/edit#gid=673528436) should update with your run info automatically once your personal sheet is set up.
+	- The [master sheet](https://docs.google.com/spreadsheets/d/14-j6QiyzX4oV378CgQhb6btfaaopbZTRXew1FxN1vag/edit#gid=673528436) should update with your run info automatically once your personal sheet is set up
 	- <span style="background-color: #ea9999">Pink columns</span> are required (A-N, V-X). See "Instructions" tab in spreadsheet for more details
 
-2. **Make sure the most up-to-date sample sheet is on the cluster.**
-	- The sample sheet lives on the cluster, here:\
-	 <code>/proj/phanstiel_lab/software/RNApipe/config/SequencingData_YYYY-MM-DD_rna.tsv</code>
-	- Check that the date of the sample sheet is past when you entered your info
-	- If not, run the following commands to upload it:
-
-       ```bash
-       module load launch_pipeline</code>
-       launch googleSync rna</code>
-       ```
-
-3. **Log onto longleaf using your ONYEN**
+2. **Log onto longleaf using your ONYEN**
 
 	- <code>ssh onyen@longleaf.unc.edu</code>
 
-4. **Navigate to your folder in the lab directory**
+3. **Make sure the most up-to-date sample sheet is on the cluster.**
+	- The sample sheet lives on the cluster, here:\
+	 <code>/proj/phanstiel_lab/software/RNApipe/config/SequencingData_YYYY-MM-DD_datatype.tsv</code>
+	- Check that the date of the sample sheet is past when you entered your info. Note that there will be different sheets for different tabs of the sample sheet, ending in either <code>rna.tsv</code>, <code>atac.tsv</code>, or <code>chip.tsv</code> - make sure you are looking at the right one! The most recently added samples (based on Sequencing Date) will be at the top of the file
+	- If you need to update the sheet on the cluster, run the following commands from the cluster to upload it:
+
+       ```bash
+       module load launch_pipeline
+       launch googleSync rna
+       ```
+    - Note that if you are running ATACpipe or ChIPpipe, you can use the same command to <code>launch googleSync chip</code> or <code>launch googleSync atac</code>
+
+4. **Navigate to your folder in the lab directory on longleaf**
 
 	- <code>cd /proj/phanstiel_lab/users/ONYEN</code>
 
-5. **Load the launch_pipeline module**
+5. **Load the launch_pipeline module (if you didn't already to update the sample sheet)**
 
 	- <code>module load launch_pipeline</code>
 
-6. **Run RNApipe.py, selecting for the Project you want** \
-	Note: See [Detailed Usage: Input Parameters](#input-parameters) for other options to filter the samplesheet with. Other sections also detail how to change the [output file paths](#output-parameters), [what parts of the pipeline](#run-parameters) are run, and [how they are run](#command-parameters).
+6. **Run RNApipe, ATACpipe, or ChIPpipe, selecting for the Project you want** \
+	Note: See [Detailed Usage: Input Parameters](#input-parameters) for other options to filter the samplesheet with. Other sections also detail how to change the [output file paths](#output-parameters), [what parts of the pipeline](#run-parameters) are run, and [how they are run](#command-parameters). Remember to see [Variations: ATACpipe and ChIPpipe](#variations-atacpipe-and-chippipe) for details specific to those versions of the pipeline.
 	- <code>launch RNApipe --p PROJ [options]</code>
 
 7. **Review the run info printed to terminal screen**
@@ -77,7 +79,9 @@ Unfortunately, the code is super cumbersome and it's also written in python 2 (!
 	- If the information looks wrong, answer <code>nah</code> and adjust your RNApipe.py options.
 
 See below for more detailed usage, or use:\
-<code>launch RNApipe --help</code>
+<code>launch RNApipe --help</code>\
+<code>launch ChIPpipe --help</code>\
+<code>launch ATACpipe --help</code>\
 
 [Back to Top](#table-of-contents)
 
@@ -336,17 +340,6 @@ Overall, ATACpipe and ChIPpipe are incredibly similar, and practically interchan
 (<code>--stage trim,align,signal,merge</code>)
 
 
-## ATAC/ChIP Quickstart
-
-Launching ATACpipe or ChIPpipe will be nearly identical to launching RNApipe. You must first load in the <code>launch_pipeline</code>module with <code>module load launch_pipeline</code>. See [RNApipe quickstart](#quickstart) for step-by-step instructions. The only differences should be:
-- The sample sheet you need to check on in <code>/proj/phanstiel_lab/software/RNApipe/config</code> will end in <code>atac.tsv</code> or <code>chip.tsv</code>.
-- To upload the most up-to-date sheet, use <code>launch googleSync chip</code> or <code>launch googleSync atac</code>.
-- Launch the pipeline with <code>launch ATACpipe --p PROJ [options]</code> or <code>launch ChIPpipe --p PROJ [options]</code>
-
-See below for more detailed usage, or use:\
-<code>launch ATACpipe --help</code>\
-<code>launch ChIPpipe --help</code>
-
 ### ATAC/ChIP Input Parameters 
 
 The input process is the same as RNApipe, with either a filtering of the Master Sequencing Sheet, or providing your own sheet with <code>--MANUAL</code>, that is formatted in the same way. There are two input parameters unique to these pipelines:
@@ -386,8 +379,8 @@ As most RNApipe command parameters pertained to RNA-specific commands, there are
 
 #### *MACS2* (for --stage peaks)
 - <code>--macs2</code> (<code>--MACS2</code>, <code>--macs2settings</code>, <code>--MACS2settings</code>): Settings passed to <code>macs2 callpeak</code>. This includes every option other than the input/output specifications. Defaults depend on the pipeline.\
-**ATACpipe DEFAULT:** <code>-f BAM -q 0.01 -g hs --nomodel --shift 100 --extsize 200 --keep-dup all -B --SPMR</code>\
-**ChIPpipe DEFAULT:** <code>-f BAM -q 0.01 -g hs --nomodel --shift 0 --extsize 200 --keep-dup all -B --SPMR</code>
+**DEFAULT (ATACpipe):** <code>-f BAM -q 0.01 -g hs --nomodel --shift 100 --extsize 200 --keep-dup all -B --SPMR</code>\
+**DEFAULT (ChIPpipe):** <code>-f BAM -q 0.01 -g hs --nomodel --shift 0 --extsize 200 --keep-dup all -B --SPMR</code>
 
 
 ## ATAC/ChIP Commands Run
@@ -465,6 +458,8 @@ Run only one time for the entire samplesheet
 ##### peak stage
 6. <code>cat .../peaks/\*.narrowPeak \| awk '{ OFS="\\t"};{ print $1, $2, $3, $4 }' \| sort -k1,1 -k2,2n \| bedtools merge > .../peaks/NAME\_peakMerge.narrowPeak</code>
 7. <code>bedtools multicov -bams .../align/\*\_filter\_sorted.bam -bed .../peaks/NAME\_peakMerge.narrowPeak > .../peaks/NAME\_counts.tsv</code>
+
+[Back to Top](#table-of-contents)
 
 -----------------
 
