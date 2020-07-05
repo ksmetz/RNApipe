@@ -890,7 +890,7 @@ for n in range(len(config)):
                 file.write('printf "Bedgraph file already exists for sample ' + nName + '\\n"\n'+
                        '# COMMAND USED: \n#')
 
-            file.write('bedtools genomecov -bga -ibam ' + directories['align'] + '/' + nName + '_sorted.bam > ' + directories['signal'] + '/' + nName + '.bedgraph\n')
+            file.write('bedtools genomecov -bga -ibam ' + directories['align'] + '/' + nName + '_filter_sorted.bam > ' + directories['signal'] + '/' + nName + '.bedgraph\n')
 
         if "bigwig" in SIGOUT:
             file.write(
@@ -906,9 +906,9 @@ for n in range(len(config)):
                 file.write('printf "Bigwig file already exists for sample ' + nName + '\\n"\n'+
                        '# COMMAND USED: \n#')
 
-            file.write('bamCoverage -b ' + directories['align'] + '/' + nName + '_sorted.bam -o ' + directories['signal'] + '/' + nName + '.bw\n' +
-              'bamCoverage --filterRNAstrand forward -b ' + directories['align'] + '/' + nName + '_sorted.bam -o ' + directories['signal'] + '/' + nName + '_fwd.bw\n' + 
-              'bamCoverage --filterRNAstrand reverse -b ' + directories['align'] + '/' + nName + '_sorted.bam -o ' + directories['signal'] + '/' + nName + '_rev.bw\n')
+            file.write('bamCoverage -b ' + directories['align'] + '/' + nName + '_filter_sorted.bam -o ' + directories['signal'] + '/' + nName + '.bw\n' +
+              'bamCoverage --filterRNAstrand forward -b ' + directories['align'] + '/' + nName + '_filter_sorted.bam -o ' + directories['signal'] + '/' + nName + '_fwd.bw\n' + 
+              'bamCoverage --filterRNAstrand reverse -b ' + directories['align'] + '/' + nName + '_filter_sorted.bam -o ' + directories['signal'] + '/' + nName + '_rev.bw\n')
 
     file.close()
 
