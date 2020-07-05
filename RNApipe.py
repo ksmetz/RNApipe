@@ -732,8 +732,8 @@ for n in range(len(config)):
     #rawRead2 = "/proj/phanstiel_lab/Data/Sequencing/fastq/project/" + nProj + "/rna/" + nPath + nRead2
 
     # For when whole path is defined in config file... UPDATE LATER????
-    rawRead1 = nPath + nRead1
-    rawRead2 = nPath + nRead2
+    rawRead1 = nPath + "/" + nRead1
+    rawRead2 = nPath + "/" + nRead2
     
     # Create link from raw file to /fastq
     link1Cmd = "ln -st " + directories['fastq'] + " " + rawRead1

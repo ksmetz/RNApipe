@@ -111,7 +111,7 @@ selGroup = optparse.OptionGroup(parser, "Selection Parameters",
 selGroup.add_option("-p", "--p", "--proj", "--PROJ", "--project",action = "store", type = "string", dest = "proj", 
                   help = "Name of project. Only one may be selected. Required unless supplying manual config file with --manual",default="all")
 # Assay (Column 4, D)
-selGroup.add_option("--assay", "--ASSAY", ,"--a", action = "store", type = "string", dest = "assay", 
+selGroup.add_option("--assay", "--ASSAY", "--a", action = "store", type = "string", dest = "assay", 
                   help = "Assay type selected.",default="ATAC")
 # Cell_Type (Column 5, E)
 selGroup.add_option("--cell", "--CELL",action = "store", type = "string", dest = "cell", 
@@ -203,7 +203,7 @@ parser.add_option_group(runGroup)
 
 cmdGroup = optparse.OptionGroup(parser, "Command Parameters",
                     "These options are passed directly to the programs used. "
-                    "Examples: annotation files for Salmon, indices, MAJIQ settings.")
+                    "Examples: index files for BWA, callpeak settings for MACS2.")
 
 # bwaidx: BWA index path
 cmdGroup.add_option("--bwaidx", "--BWAIDX", "--BWAidx", "--bwaindex",action = "store", type = "string", dest = "bwaindex", 
@@ -253,9 +253,6 @@ MERGE = optionLister(options.merge)
 RERUN = options.rerun
 
 # Command parameters
-ANNT = options.annt
-KMER = options.kmer
-TRNS = options.trns
 BWAIDX = options.bwaindex
 MACS2settings = options.macsSettings
 
@@ -507,7 +504,7 @@ if "align" in STAGE:
 if "peaks" in STAGE:
     print "MACS2"    
     print "-----"
-    print "MACS2 settings   = " + MACSsettings
+    print "MACS2 settings   = " + MACS2settings
     print "\n"
 
 # Output parameters
@@ -607,7 +604,7 @@ if "bigwig" in SIGOUT:
 modules = {
     'QC':{"FASTQC":FASTQCvers, "MultiQC":multiQCvers},
     'trim':{"Trim Galore!":TrimVers},
-    'align':{"HISAT2":hisatVers, "Samtools":samVers},
+    'align':{"bwa":bwaVers, "Samtools":samVers},
     'signal':signalDict,    
     'peaks':{"macs":MACSvers},
     'merge':{"Samtools":samVers}
@@ -672,8 +669,8 @@ for n in range(len(config)):
     #rawRead2 = "/proj/phanstiel_lab/Data/Sequencing/fastq/project/" + nProj + "/atac/" + nPath + nRead2
 
     # For when whole path is defined in config file... UPDATE LATER????
-    rawRead1 = nPath + nRead1
-    rawRead2 = nPath + nRead2
+    rawRead1 = nPath + "/" + nRead1
+    rawRead2 = nPath + "/" + nRead2
     
     # Create link from raw file to /fastq
     link1Cmd = "ln -st " + directories['fastq'] + " " + rawRead1
@@ -871,7 +868,7 @@ for n in range(len(config)):
             file.write('printf "Peak calls already exist for sample ' + nName + '\\n"\n'+
                        '# COMMAND USED: \n#')
 
-        file.write('macs2 callpeak -t ' + directories['align'] + '/' + nName + '_filter_sorted.bam ' + MACSsettings + ' --outdir ' + directories['peaks'] + ' -n ' + nName + '\n')
+        file.write('macs2 callpeak -t ' + directories['align'] + '/' + nName + '_filter_sorted.bam ' + MACS2settings + ' --outdir ' + directories['peaks'] + ' -n ' + nName + '\n')
 
     if "signal" in STAGE:
         file.write(
@@ -1018,7 +1015,7 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
                     file.write('printf "Peak calls already exist for samples: ' + ", ".join(sampleList) + '\\n"\n'+
                                '# COMMAND USED: \n#')
 
-                file.write('macs2 callpeak -t ' + directories['align'] + '/MERGE_' + mergeName + '.bam ' + MACSsettings + ' --outdir ' + directories['peaks'] + ' -n ' + mergeName + '\n')
+                file.write('macs2 callpeak -t ' + directories['align'] + '/MERGE_' + mergeName + '.bam ' + MACS2settings + ' --outdir ' + directories['peaks'] + ' -n ' + mergeName + '\n')
 
             if "signal" in STAGE:
                 file.write(
