@@ -981,7 +981,7 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
                 file.write('printf "Merged BAM file already exists for samples: ' + ", ".join(sampleList) + '\\n"\n'+
                              '# COMMAND USED: \n#')
 
-            mergeStrList = directories['align'] + '/' + sampleList + '_sorted.bam'
+            mergeStrList = directories['align'] + '/' + sampleList + '_filter_sorted.bam'
             file.write('samtools merge ' + directories['align'] + '/MERGE_' + mergeName + '.bam ' + " ".join(mergeStrList) + '\n')
             
             file.write(
