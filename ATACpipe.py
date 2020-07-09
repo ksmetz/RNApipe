@@ -909,7 +909,7 @@ for n in range(len(config)):
             'module add macs/' + MACSvers + "\n" +
             '\n')
 
-        if RERUN == False and os.path.isfile(directories['peaks'] + '/' + nName + '.narrowPeak'):
+        if RERUN == False and os.path.isfile(directories['peaks'] + '/' + nName + '_peaks.narrowPeak'):
             file.write('printf "Peak calls already exist for sample ' + nName + '\\n"\n'+
                        '# COMMAND USED: \n#')
 
@@ -1033,7 +1033,7 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
                 'printf "Merging BAM files with Samtools (temp merge.BAM files)...\\n"\n' +
                 'printf "=========================================================\\n"\n' +
                 '\n' +
-                'date\n' +
+                'date\n' + 
                 'module add samtools/' + samVers + "\n" +
                 '\n')
 
@@ -1071,11 +1071,11 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
                     'module add macs/' + MACSvers + "\n" +
                     '\n')
 
-                if RERUN == False and os.path.isfile(directories['peaks'] + '/' + mergeName + '_peaks.narrowPeak'):
+                if RERUN == False and os.path.isfile(directories['peaks'] + '/MERGE_' + mergeName + '_peaks.narrowPeak'):
                     file.write('printf "Peak calls already exist for samples: ' + ", ".join(sampleList) + '\\n"\n'+
                                '# COMMAND USED: \n#')
 
-                file.write('macs2 callpeak -t ' + directories['align'] + '/MERGE_' + mergeName + '.bam ' + MACS2settings + ' --outdir ' + directories['peaks'] + ' -n ' + mergeName + '\n')
+                file.write('macs2 callpeak -t ' + directories['align'] + '/MERGE_' + mergeName + '.bam ' + MACS2settings + ' --outdir ' + directories['peaks'] + ' -n MERGE_' + mergeName + '\n')
 
             if "peaks" in STAGE and "HMMR" in PEAKCALLER:
                 file.write(
@@ -1087,12 +1087,12 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
                     'printf "==============================\\n"\n' +
                     '\n')
 
-                if RERUN == False and os.path.isfile(directories['peaks'] + '/' + mergeName + '_HMMR_peaks*'):
+                if RERUN == False and os.path.isfile(directories['peaks'] + '/MERGE_' + mergeName + '_HMMR_peaks*'):
                     file.write('printf "Peak calls already exist for samples: ' + ", ".join(sampleList) + '\\n"\n'+
                                '# COMMAND USED: \n#')
 
-                file.write('java -jar /proj/phanstiel_lab/software/HMMRATAC/HMMRATAC_V1.2.10_exe.jar -b ' + directories['align'] + '/MERGE_' + mergeName + '.bam -i ' + directories['align'] + '/MERGE_' + mergeName + '.bam.bai -g ' + CHRSIZES + ' ' + HMMRsettings + ' -o ' + mergeName + '_HMMR\n' +
-                           'mv ./'+ mergeName + '_HMMR* ' + directories['peaks'] + '/\n')
+                file.write('java -jar /proj/phanstiel_lab/software/HMMRATAC/HMMRATAC_V1.2.10_exe.jar -b ' + directories['align'] + '/MERGE_' + mergeName + '.bam -i ' + directories['align'] + '/MERGE_' + mergeName + '.bam.bai -g ' + CHRSIZES + ' ' + HMMRsettings + ' -o MERGE_' + mergeName + '_HMMR\n' +
+                           'mv ./MERGE_'+ mergeName + '_HMMR* ' + directories['peaks'] + '/\n')
 
             if "signal" in STAGE:
                 file.write(
@@ -1233,13 +1233,22 @@ if "QC" in STAGE or "peaks" in STAGE:
             file.write('printf "Peak calls already exist for samples: ' + ", ".join(sampleList) + '\\n"\n'+
               '# COMMAND USED: \n#')
 
-        if "MACS2" in PEAKCALLER:
-          file.write('''cat ''' + directories['peaks'] + '''/*.narrowPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_peakMerge.bed \n''')
-        elif "HMMR" in PEAKCALLER:
-          if "full" in HMMRSTART:
-            file.write('''cat ''' + directories['peaks'] + '''/*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_peakMerge.bed \n''')
-          elif "open" in HMMRSTART:
-            file.write('''cat ''' + directories['peaks'] + '''/*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $7, $8, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_peakMerge.bed \n''')
+        if "merge" in STAGE:
+          if "MACS2" in PEAKCALLER:
+            file.write('''cat ''' + directories['peaks'] + '''/MERGE*.narrowPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_peakMerge.bed \n''')
+          elif "HMMR" in PEAKCALLER:
+            if "full" in HMMRSTART:
+              file.write('''cat ''' + directories['peaks'] + '''/MERGE*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMerge.bed \n''')
+            elif "open" in HMMRSTART:
+              file.write('''cat ''' + directories['peaks'] + '''/MERGE*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $7, $8, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMerge.bed \n''')
+        else:
+          if "MACS2" in PEAKCALLER:
+            file.write('''cat ''' + directories['peaks'] + '''/*.narrowPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_peakMerge.bed \n''')
+          elif "HMMR" in PEAKCALLER:
+            if "full" in HMMRSTART:
+              file.write('''cat ''' + directories['peaks'] + '''/*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMerge.bed \n''')
+            elif "open" in HMMRSTART:
+              file.write('''cat ''' + directories['peaks'] + '''/*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $7, $8, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMerge.bed \n''')
 
         file.write(
             '\n' +
@@ -1253,7 +1262,10 @@ if "QC" in STAGE or "peaks" in STAGE:
             file.write('printf "Peak counts already summarized"\n'+
                        '# COMMAND USED: \n#')
 
-        file.write('bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_peakMerge.bed' + ' > ' + directories['peaks'] + '/' + NAME + '_counts.tsv \n')
+        if "MACS2" in PEAKCALLER:
+          file.write('bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_MACS2_peakMerge.bed' + ' > ' + directories['peaks'] + '/' + NAME + '_MACS2_counts.tsv \n')
+        elif "HMMR" in PEAKCALLER:
+          file.write('bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_HMMR_peakMerge.bed' + ' > ' + directories['peaks'] + '/' + NAME + '_HMMR_counts.tsv \n')
 
     file.close()
 
