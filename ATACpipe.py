@@ -179,24 +179,24 @@ runGroup = optparse.OptionGroup(parser, "Run Parameters",
 
 # Temporary: option to keep the temporary files that are normally deleted
 runGroup.add_option("--temp", "--TEMP", "--keep", "--KEEP",action = "store", type = "string", dest = "temp", 
-                  help = "Toggle (T/F) whether to keep temporary files (FastQC, trimmed FastQ, etc.)",default="F")
+                  help = "Toggle (T/F) whether to keep temporary files (FastQC, trimmed FastQ, etc.) (default: F)",default="F")
 # Stage: pick the parts of the analysis you want to run (function to interpret???)
 runGroup.add_option("--stage", "--STAGE", "--S",action = "store", type = "string", dest = "stage", 
-                  help = "Select the stages of the code to run. Choose from 'QC' (create multiQC), trim' (create trimmed.fq), 'align' (BAM files), 'peaks' (MACS2), 'signal' (bedgraphs/bigwigs, see --sigout), and 'merge' (combine BAMs by Bio Rep for signal step).",
+                  help = "Select the stages of the code to run. Choose from 'QC' (create multiQC), trim' (create trimmed.fq), 'align' (BAM files), 'peaks' (MACS2), 'signal' (bedgraphs/bigwigs, see --sigout), and 'merge' (combine BAMs by Bio Rep for signal step). (default: QC,trim,align,peaks,signal)",
                   default="QC,trim,align,peaks,signal") 
 # Merge: choose what to match for BAM alignment merging (used to create merged signal tracks)
 runGroup.add_option("--merge", "--mergeby", "--MERGE", action = "store", type = "string", dest = "merge", 
-                  help = "Select which columns to merge when creating sample alignments for combined signal tracks. Please use exact column name.",
+                  help = "Select which columns to merge when creating sample alignments for combined signal tracks. Please use exact column name. (default: Bio_Rep,Tech_Rep,Seq_Rep)",
                   default="Bio_Rep,Tech_Rep,Seq_Rep") 
 # Sigout: control the output of signal, if chosen
 runGroup.add_option("--signalout", "--sigout", "--SIGNALOUT", "--SIGOUT",action = "store", type = "string", dest = "sigout", 
-                  help = "Select the output signal file type. Choose from 'bigwig' and/or 'bedgraph",default="bigwig") 
+                  help = "Select the output signal file type. Choose from 'bigwig' (default) and/or 'bedgraph",default="bigwig") 
 # Peakcaller: control the program used to call peaks (MACS2 or HMMRATAC)
 runGroup.add_option("--peakcaller", "--PEAKCALLER", "--peakCaller", action = "store", type = "string", dest = "peakcaller", 
-                  help = "Select the peak caller to use. Choose from 'MACS2' and/or 'HMMR' (for HMMRATAC)",default="MACS2") 
+                  help = "Select the peak caller to use. Choose from 'MACS2' (default) and/or 'HMMR' (for HMMRATAC)",default="MACS2") 
 # Rerun: option to overwrite existing files, rather than skip the steps that lead to them
 runGroup.add_option("--rerun", "--RERUN", action = "store", type = "string", dest = "rerun", 
-                  help = "Toggle (T/F) whether to overwrite existing files in output directory.",default="T")
+                  help = "Toggle (T/F) whether to overwrite existing files in output directory. (default: T)",default="T")
 
 parser.add_option_group(runGroup)
 
@@ -210,27 +210,32 @@ cmdGroup = optparse.OptionGroup(parser, "Command Parameters",
 
 # bwaidx: BWA index path
 cmdGroup.add_option("--bwaidx", "--BWAIDX", "--BWAidx", "--bwaindex",action = "store", type = "string", dest = "bwaindex", 
-                  help = "Path to BWA-created index + prefix (default: HG19)",
+                  help = "Path to BWA-created index + prefix (default: /proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa)",
                   default="/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa")
+
+# filtering: name of mitochondrial chromosome
+cmdGroup.add_option("--chrM", "--mitochrom", "--chromM", "--mito", "--MITO",action = "store", type = "string", dest = "mitochrom", 
+                  help = "Name of mitochondrial chromosome for filtering; should match BWA index file (default: chrM)",
+                  default="chrM")
 
 # macs2: MACS2 peakcall settings
 cmdGroup.add_option("--macs2", "--macs2settings", "--MACS2", "--MACS2settings",action = "store", type = "string", dest = "macsSettings", 
-                  help = "Setting passed to macs2 peakcall (excluding file input and output)",
+                  help = "Setting passed to macs2 peakcall (excluding file input and output) (default: -f BAM -q 0.01 -g hs --nomodel --shift 100 --extsize 200 --keep-dup all -B --SPMR)",
                   default="-f BAM -q 0.01 -g hs --nomodel --shift 100 --extsize 200 --keep-dup all -B --SPMR")
 
 # HMMR: HMMRATAC peak calling settings
 cmdGroup.add_option("--hmmr", "--hmmratac", "--HMMR", "--HMMRATAC", "--hmmrSettings", action = "store", type = "string", dest = "hmmrSettings", 
-                  help = "Setting passed to HMMRATAC for peak calling (excluding file input and output, chrom.sizes file)",
+                  help = "Setting passed to HMMRATAC for peak calling (excluding file input and output, chrom.sizes file) (default: none)",
                   default="")
 
 # chrsizes: chrom.sizes file for HMMRATAC peak calling 
 cmdGroup.add_option("--chromsizes", "--chrom", "--chrsizes", action = "store", type = "string", dest = "chrsizes", 
-                  help = "chrom.sizes file used in HMMRATAC for peak calling",
+                  help = "chrom.sizes file used in HMMRATAC for peak calling (default: /proj/phanstiel_lab/software/resources/hg19_chromSizes.txt)",
                   default="/proj/phanstiel_lab/software/resources/hg19_chromSizes.txt")
 
 # HMMRstart: selecting which coordinates to use from HMMR output ("full" or "open")
 cmdGroup.add_option("--hmmrstart", "--startcoords", "--hmmrcoords", action = "store", type = "string", dest = "hmmrstart", 
-                  help = "Select which coordinates to use as peaks from HMMR output (full = columns 2+3, open = columns 8+9)",
+                  help = "Select which coordinates to use as peaks from HMMR output (full = columns 2+3, open = columns 8+9) (default:full)",
                   default="full")
 
 
@@ -273,6 +278,7 @@ RERUN = options.rerun
 
 # Command parameters
 BWAIDX = options.bwaindex
+MITO = options.mitochrom
 MACS2settings = options.macsSettings
 HMMRsettings = options.hmmrSettings
 CHRSIZES = options.chrsizes
@@ -537,6 +543,10 @@ print "\n"
 print "COMMAND PARAMETERS"
 print "==================\n"    
 if "align" in STAGE:
+    print "FILTERING"    
+    print "---------"
+    print "Chrom filtered   = " + MITO
+    print "\n"
     print "BWA MEM"    
     print "-------"
     print "Index            = " + BWAIDX
@@ -862,12 +872,40 @@ for n in range(len(config)):
             'date\n' +
             '\n')
 
-        if RERUN == False and os.path.isfile(directories['align'] + '/' + nName + '_filter_sorted.bam'):
+        if RERUN == False and os.path.isfile(directories['align'] + '/' + nName + '_nodup_sorted.bam'):
             file.write('printf "Sorted BAM file already exists for sample ' + nName + '\\n"\n'+
                        '# COMMAND USED: \n#')
 
-        file.write('java -Xmx16g -jar /nas/longleaf/apps/picard/2.10.3/picard-2.10.3/picard.jar MarkDuplicates I=' + directories['align'] + '/' + nName + '_sorted.bam O=' + directories['align'] + '/' + nName + '_filter_sorted.bam M=' + directories['align'] + '/' + nName + '_dup_metrics.txt REMOVE_SEQUENCING_DUPLICATES=true\n')
+        file.write('java -Xmx16g -jar /nas/longleaf/apps/picard/2.10.3/picard-2.10.3/picard.jar MarkDuplicates I=' + directories['align'] + '/' + nName + '_sorted.bam O=' + directories['align'] + '/' + nName + '_nodup_sorted.bam M=' + directories['align'] + '/' + nName + '_dup_metrics.txt REMOVE_SEQUENCING_DUPLICATES=true\n')
+ 
+        file.write(
+            '\n' +
+            'printf "Preliminary indexing with Samtools...\\n"\n' +
+            'printf "=====================================\\n"\n' +
+            '\n'
+            'date\n' +
+            '\n')
 
+        if RERUN == False and os.path.isfile(directories['align'] + '/' + nName + '_nodup_sorted.bam.bai'):
+            file.write('printf "BAM indices already conducted for sample ' + nName + '\\n"\n'+
+                       '# COMMAND USED: \n#')
+
+        file.write('samtools index ' + directories['align'] + '/' + nName + '_nodup_sorted.bam \n')
+
+        file.write(
+            '\n' +
+            'printf "Removing mitochondrial reads with Samtools...\\n"\n' +
+            'printf "=============================================\\n"\n' +
+            '\n'
+            'date\n' +
+            '\n')
+
+        if RERUN == False and os.path.isfile(directories['align'] + '/' + nName + '_filter_sorted.bam'):
+            file.write('printf "Mitochondrial reads already filtered from sample ' + nName + '\\n"\n'+
+                       '# COMMAND USED: \n#')
+
+        file.write('samtools idxstats ' + directories['align'] + '/' + nName + '_nodup_sorted.bam | cut -f 1 | grep -v ' + MITO + ' | xargs samtools view -b ' + directories['align'] + '/' + nName + '_nodup_sorted.bam > ' + directories['align'] + '/' + nName + '_filter_sorted.bam\n')
+ 
         file.write(
             '\n' +
             'printf "Indexing BAM files with Samtools...\\n"\n' +
@@ -881,7 +919,7 @@ for n in range(len(config)):
                        '# COMMAND USED: \n#')
 
         file.write('samtools index ' + directories['align'] + '/' + nName + '_filter_sorted.bam \n')
-
+       
     if TEMP == False:
         file.write(
             '\n\n' +
@@ -894,7 +932,9 @@ for n in range(len(config)):
             'date\n' +
             'rm ' + directories['fastq'] + '/' + nName + '_1_trimmed.fq.gz \n' +
             'rm ' + directories['fastq'] + '/' + nName + '_2_trimmed.fq.gz \n' +
-            'rm ' + directories['align'] + '/' + nName + '_sorted.bam')
+            'rm ' + directories['align'] + '/' + nName + '_sorted.bam' +
+            'rm ' + directories['align'] + '/' + nName + '_nodup_sorted.bam' + 
+            'rm ' + directories['align'] + '/' + nName + '_nodup_sorted.bam.bai')
 
     if "peaks" in STAGE and "MACS2" in PEAKCALLER:
         file.write(
@@ -925,12 +965,11 @@ for n in range(len(config)):
             'printf "==============================\\n"\n' +
             '\n')
 
-        if RERUN == False and os.path.isfile(directories['peaks'] + '/' + nName + '_HMMR_peaks*'):
-            file.write('printf "Peak calls already exist for samples: ' + ", ".join(sampleList) + '\\n"\n'+
-                       '# COMMAND USED: \n#')
-
-        file.write('java -jar /proj/phanstiel_lab/software/HMMRATAC/HMMRATAC_V1.2.10_exe.jar -b ' + directories['align'] + '/' + nName + '_filter_sorted.bam -i ' + directories['align'] + '/' + nName + '_filter_sorted.bam.bai -g ' + CHRSIZES + ' ' + HMMRsettings + ' -o ' + nName + '_HMMR\n' +
-                   'mv ./'+ nName + '_HMMR* ' + directories['peaks'] + '/\n')
+        if RERUN == False and os.path.isfile(directories['peaks'] + '/' + nName + '_HMMR_peaks.gappedPeak'):
+            file.write('printf "Peak calls already exist for sample' + nName + '\\n"\n')
+        else:
+            file.write('java -jar /proj/phanstiel_lab/software/HMMRATAC/HMMRATAC_V1.2.10_exe.jar -b ' + directories['align'] + '/' + nName + '_filter_sorted.bam -i ' + directories['align'] + '/' + nName + '_filter_sorted.bam.bai -g ' + CHRSIZES + ' ' + HMMRsettings + ' -o ' + nName + '_HMMR\n' +
+                       'mv ./'+ nName + '_HMMR* ' + directories['peaks'] + '/\n')
 
     if "signal" in STAGE:
         file.write(
@@ -1230,28 +1269,36 @@ if "QC" in STAGE or "peaks" in STAGE:
         'module add bedtools/' + bedVers + "\n")
 
         if RERUN == False and os.path.isfile(directories['peaks'] + '/' + NAME + '_peakMerge.bed'):
-            file.write('printf "Peak calls already exist for samples: ' + ", ".join(sampleList) + '\\n"\n'+
-              '# COMMAND USED: \n#')
+            file.write('printf "Peak calls already exist for samples: ' + ", ".join(sampleList) + '\\n"\n')
 
         if "merge" in STAGE:
           if "MACS2" in PEAKCALLER:
-            file.write('''cat ''' + directories['peaks'] + '''/MERGE*.narrowPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_peakMerge.bed \n''')
+            file.write('''cat ''' + directories['peaks'] + '''/MERGE*.narrowPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_peakMergeTEMP.bed \n''')
+            file.write('grep -ve "-1" ' + directories['peaks'] + '/' + NAME + '_MACS2_peakMergeTEMP.bed > ' + directories['peaks'] + '/' + NAME + '_MACS2_peakMerge.bed \n')
+            file.write('rm ' + directories['peaks'] + '/' + NAME + '_MACS2_peakMergeTEMP.bed \n')
           elif "HMMR" in PEAKCALLER:
             if "full" in HMMRSTART:
-              file.write('''cat ''' + directories['peaks'] + '''/MERGE*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMerge.bed \n''')
+              file.write('''cat ''' + directories['peaks'] + '''/MERGE*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMergeTEMP.bed \n''')
             elif "open" in HMMRSTART:
-              file.write('''cat ''' + directories['peaks'] + '''/MERGE*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $7, $8, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMerge.bed \n''')
+              file.write('''cat ''' + directories['peaks'] + '''/MERGE*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $7, $8, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMergeTEMP.bed \n''')
+            file.write('grep -ve "-1" ' + directories['peaks'] + '/' + NAME + '_HMMR_peakMergeTEMP.bed > ' + directories['peaks'] + '/' + NAME + '_HMMR_peakMerge.bed \n')
+            file.write('rm ' + directories['peaks'] + '/' + NAME + '_HMMR_peakMergeTEMP.bed\n')
+          
         else:
           if "MACS2" in PEAKCALLER:
-            file.write('''cat ''' + directories['peaks'] + '''/*.narrowPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_peakMerge.bed \n''')
+            file.write('''cat ''' + directories['peaks'] + '''/*.narrowPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_peakMergeTEMP.bed \n''')
+            file.write('grep -ve "-1" ' + directories['peaks'] + '/' + NAME + '_MACS2_peakMergeTEMP.bed > ' + directories['peaks'] + '/' + NAME + '_MACS2_peakMerge.bed \n')
+            file.write('rm ' + directories['peaks'] + '/' + NAME + '_MACS2_peakMergeTEMP.bed \n')
           elif "HMMR" in PEAKCALLER:
             if "full" in HMMRSTART:
-              file.write('''cat ''' + directories['peaks'] + '''/*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMerge.bed \n''')
+              file.write('''cat ''' + directories['peaks'] + '''/*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMergeTEMP.bed \n''')
             elif "open" in HMMRSTART:
-              file.write('''cat ''' + directories['peaks'] + '''/*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $7, $8, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMerge.bed \n''')
+              file.write('''cat ''' + directories['peaks'] + '''/*.gappedPeak | awk '{ OFS="\\t" };{ print $1, $7, $8, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_peakMergeTEMP.bed \n''')
+            file.write('grep -ve "-1" ' + directories['peaks'] + '/' + NAME + '_HMMR_peakMergeTEMP.bed > ' + directories['peaks'] + '/' + NAME + '_HMMR_peakMerge.bed \n')
+            file.write('rm ' + directories['peaks'] + '/' + NAME + '_HMMR_peakMergeTEMP.bed\n')
 
         file.write(
-            '\n' +
+            '\n\n\n' +
             'printf "Creating count matrix with bedtools...\\n"\n' +
             'printf "===================================\\n"\n' +
             '\n'
@@ -1259,13 +1306,19 @@ if "QC" in STAGE or "peaks" in STAGE:
             '\n')
 
         if RERUN == False and os.path.isfile(directories['peaks'] + '/' + NAME + '_counts.tsv'):
-            file.write('printf "Peak counts already summarized"\n'+
-                       '# COMMAND USED: \n#')
-
-        if "MACS2" in PEAKCALLER:
-          file.write('bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_MACS2_peakMerge.bed' + ' > ' + directories['peaks'] + '/' + NAME + '_MACS2_counts.tsv \n')
+            file.write('printf "Peak counts already summarized"\n')
+        elif "MACS2" in PEAKCALLER:
+          file.write(
+            '''printf "chr\tstart\tstop\t" > ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_counts.tsv\n''' +
+            '''for f in ''' + directories['align'] + '''/*filter_sorted.bam; do NAME=$(basename $f _filter_sorted.bam); printf '%s\t' "$NAME" >> ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_counts.tsv; done \n''' +
+            '''printf '\n' >> ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_counts.tsv\n''' +
+            'bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_MACS2_peakMerge.bed' + ' >> ' + directories['peaks'] + '/' + NAME + '_MACS2_counts.tsv \n')
         elif "HMMR" in PEAKCALLER:
-          file.write('bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_HMMR_peakMerge.bed' + ' > ' + directories['peaks'] + '/' + NAME + '_HMMR_counts.tsv \n')
+          file.write(
+            '''printf "chr\tstart\tstop\t" > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_counts.tsv\n''' +
+            '''for f in ''' + directories['align'] + '''/*filter_sorted.bam; do NAME=$(basename $f _filter_sorted.bam); printf '%s\t' "$NAME" >> ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_counts.tsv; done \n''' +
+            '''printf '\n' >> ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_counts.tsv\n''' +
+            'bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_HMMR_peakMerge.bed' + ' >> ' + directories['peaks'] + '/' + NAME + '_HMMR_counts.tsv \n')
 
     file.close()
 

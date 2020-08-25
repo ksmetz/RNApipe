@@ -1154,11 +1154,11 @@ if "QC" in STAGE or "peaks" in STAGE:
         'date\n' +
         'module add bedtools/' + bedVers + "\n")
 
-        if RERUN == False and os.path.isfile(directories['peaks'] + '/' + NAME + '_peakMerge.narrowPeak'):
+        if RERUN == False and os.path.isfile(directories['peaks'] + '/' + NAME + '_peakMerge.bed'):
             file.write('printf "Peak calls already exist for samples: ' + ", ".join(sampleList) + '\\n"\n'+
               '# COMMAND USED: \n#')
 
-        file.write('''cat ''' + directories['peaks'] + '''/*.narrowPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_peakMerge.narrowPeak \n''')
+        file.write('''cat ''' + directories['peaks'] + '''/*.narrowPeak | awk '{ OFS="\\t" };{ print $1, $2, $3, $4 }' | sort -k1,1 -k2,2n | bedtools merge > ''' + directories['peaks'] + '''/''' + NAME + '''_peakMerge.bed \n''')
 
         file.write(
             '\n' +
@@ -1172,7 +1172,11 @@ if "QC" in STAGE or "peaks" in STAGE:
             file.write('printf "Peak counts already summarized"\n'+
                        '# COMMAND USED: \n#')
 
-        file.write('bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_peakMerge.narrowPeak' + ' > ' + directories['peaks'] + '/' + NAME + '_counts.tsv \n')
+        file.write(
+            '''printf "chr\tstart\tstop\t" > ''' + directories['peaks'] + '''/''' + NAME + '''_counts.tsv\n''' +
+            '''for f in ''' + directories['align'] + '''/*filter_sorted.bam; do NAME=$(basename $f _filter_sorted.bam); printf '%s\t' "$NAME" >> ''' + directories['peaks'] + '''/''' + NAME + '''_counts.tsv; done \n''' +
+            '''printf '\n' >> ''' + directories['peaks'] + '''/''' + NAME + '''_counts.tsv\n''' +
+            'bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_peakMerge.bed' + ' > ' + directories['peaks'] + '/' + NAME + '_counts.tsv \n')
 
     file.close()
 

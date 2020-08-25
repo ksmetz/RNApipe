@@ -1,6 +1,6 @@
 # RNApipe
 Katie Metz Reed\
-*Last Updated: 07-04-2020*
+*Last Updated: 08-25-2020*
 
 Phanstiel lab (temporary?) pipeline for paired-end RNAseq data.
 
@@ -331,7 +331,7 @@ Run only one time for the entire samplesheet
 
 There are also similar pipelines for processing paired-end ChIP-seq (without input control) and ATAC-seq/FAIRE-seq data. For the most part these pipelines function exactly the same as RNApipe, as they were built from the same script. As such, only the differences between RNApipe and these pipelines are detailed here.
 
-Overall, ATACpipe and ChIPpipe are incredibly similar, and practically interchangable - they have been named separately mostly for organizational purposes. For both pipelines, the major outputs are:
+Overall, ATACpipe and ChIPpipe are incredibly similar - the major differences lay in the filtering of reads and calling of peaks for ATAC. For both pipelines, the major outputs are:
 1. a TSV matrix listing the positions of all peaks (merged among all samples), and a list of all counts at each position, for downstream differential analysis in R\
 (<code>--stage trim,align,peaks</code>)
 2. QC summary html files detailing quality of samples\
@@ -344,9 +344,9 @@ Overall, ATACpipe and ChIPpipe are incredibly similar, and practically interchan
 
 The input process is the same as RNApipe, with either a filtering of the Master Sequencing Sheet, or providing your own sheet with <code>--MANUAL</code>, that is formatted in the same way. There are two input parameters unique to these pipelines:
 - <code>--assay</code> (<code>--ASSAY</code>, <code>--a</code>)\
-Used to select the assay name in ATACpipe (as ATACpipe can use either ATAC or FAIRE-seq data)
+ATACpipe only. Used to select the assay name (as ATACpipe can use either ATAC or FAIRE-seq data)
 - <code>--target</code> (<code>--TARGET</code>, <code>--targ</code>, <code>--TARG</code>, <code>--t</code>)\
-Used to select the IP target in ChIPpipe. **REQUIRED.** 
+ChIPpipe only. Used to select the IP target (i.e. H3K27ac). **REQUIRED.** 
 
 ### ATAC/ChIP Output Parameters 
 
@@ -361,8 +361,8 @@ This is where you begin to see major divergence between RNApipe and ATACpipe + C
 As such, the <code>--stage</code> parameters to chose from are:
 - <code>QC</code>: Create individual and summary reports of QC metrics for sequencing and alignment, using FastQC + MultiQC
 - <code>trim</code>: Remove adapters and low-quality reads from fastq files, using Trim Galore!
-- <code>align</code>: Align reads to transcriptome (required for signal tracks or splicing info), using HISAT2 and Samtools
-- <code>peaks</code>: Call peaks using MACS2, and create a count matrix used for downstream differential analysis in DESeq2
+- <code>align</code>: Align reads to transcriptome (required for signal tracks or splicing info), using HISAT2 and Samtools. Reads are also filtered in different ways.
+- <code>peaks</code>: Call peaks using MACS2 or HMMRATAC (ATACpipe only), and create a count matrix used for downstream differential analysis in DESeq2
 - <code>signal</code>: Create bedgraph or bigwig signal tracks
 - <code>merge</code>: Combine aligned files to make merged signal tracks
 
@@ -371,6 +371,10 @@ The other run parameters (such as <code>--merge</code>, <code>--temp</code>, <co
 ### ATAC/ChIP Command Parameters 
 
 As most RNApipe command parameters pertained to RNA-specific commands, there are far fewer command parameters for ATACpipe and ChIPpipe. These include:
+
+#### *MITO* (for --stage align in ATACpipe)
+- <code>--mito</code> (<code>--chrM</code>, <code>--mitochrom</code>, <code>--chromM</code>, <code>--MITO</code>): Name of mitochondrial chromosome for filtering; should match BWA index file \
+**DEFAULT:** chrM
 
 #### *BWA* (for --stage align)
 - <code>--bwaidx</code> (<code>--BWAIDX</code>, <code>--BWAidx</code>, <code>--bwaindex</code>): Path to Salmon transcript index \
@@ -381,6 +385,19 @@ As most RNApipe command parameters pertained to RNA-specific commands, there are
 - <code>--macs2</code> (<code>--MACS2</code>, <code>--macs2settings</code>, <code>--MACS2settings</code>): Settings passed to <code>macs2 callpeak</code>. This includes every option other than the input/output specifications. Defaults depend on the pipeline.\
 **DEFAULT (ATACpipe):** <code>-f BAM -q 0.01 -g hs --nomodel --shift 100 --extsize 200 --keep-dup all -B --SPMR</code>\
 **DEFAULT (ChIPpipe):** <code>-f BAM -q 0.01 -g hs --nomodel --shift 0 --extsize 200 --keep-dup all -B --SPMR</code>
+
+#### *HMMR* (for --stage peaks in ATACpipe)
+- <code>--hmmr</code> (<code>--hmmratac</code>, <code>--HMMR</code>, <code>--HMMRATAC</code>, <code>--hmmrSettings</code>): Setting passed to HMMRATAC for peak calling (excluding file input and output, chrom.sizes file)\
+**DEFAULT:** None
+
+#### *chrsizes* (for --stage peaks in ATACpipe)
+- <code>--chrsizes</code> (<code>--chrom</code>, <code>--chromsizes</code>, <code>--MACS2settings</code>): chrom.sizes file used in HMMRATAC for peak calling (default: /proj/phanstiel_lab/software/resources/hg19_chromSizes.txt)\
+**DEFAULT:** <code>/proj/phanstiel_lab/software/resources/hg19_chromSizes.txt</code>
+
+#### *HMMRstart* (for --stage peaks)
+"--hmmrstart", "--startcoords", "--hmmrcoords"
+- <code>--hmmrstart</code> (<code>--startcoords</code>, <code>--hmmrcoords</code>): Select which coordinates to use as peaks from HMMR output (full = columns 2+3, open = columns 8+9)\
+**DEFAULT:** full
 
 
 ## ATAC/ChIP Commands Run
@@ -403,33 +420,39 @@ These commands are written and run for every sample (line) in the samplesheet pr
 
 8. <code>bwa mem -t 8 BWAIDX .../fastq/Name\_1\_trimmed.fq.gz .../fastq/Name\_2\_trimmed.fq.gz \| samtools view -u \| samtools sort -o .../align/Name\_sorted.bam</code>
 9. <code>samtools flagstat .../align/Name\_sorted.bam > .../align/Name\_stats.txt</code>
-10. <code>java -Xmx16g -jar /nas/longleaf/apps/picard/2.10.3/picard-2.10.3/picard.jar MarkDuplicates I=.../align/Name\_sorted.bam O=.../align/Name\_filter\_sorted.bam M=.../align/Name\_dup\_metrics.txt REMOVE_SEQUENCING_DUPLICATES=true</code>
-11. <code>samtools index .../align/Name\_sorted.bam</code>
+10. <code>java -Xmx16g -jar /nas/longleaf/apps/picard/2.10.3/picard-2.10.3/picard.jar MarkDuplicates I=.../align/Name\_sorted.bam O=.../align/Name\_nodups\_sorted.bam M=.../align/Name\_dup\_metrics.txt REMOVE_SEQUENCING_DUPLICATES=true</code>
+11. ***ATACpipe ONLY!*** <code>samtools index .../align/Name\_sorted.bam</code>
+12. ***ATACpipe ONLY!*** <code>samtools idxstats .../align/Name\_nodups_sorted.bam | cut -f 1 | grep -v 'chrM' | xargs samtools view -b .../align/Name\_nodups\_sorted.bam > .../align/Name\_filter\_sorted.bam</code>
+13. <code>samtools index .../align/Name\_filter\_sorted.bam</code>
 
 ##### temp/keep set to False
-12. <code>rm .../fastq/Name\_1\_trimmed.fq.gz</code>
-13. <code>rm .../fastq/Name\_2\_trimmed.fq.gz</code>
+14. <code>rm .../fastq/Name\_1\_trimmed.fq.gz</code>
+15. <code>rm .../fastq/Name\_2\_trimmed.fq.gz</code>
+16. <code>rm .../align/Name\_sorted.bam</code>
+17. <code>rm .../align/Name\_nodups\_sorted.bam</code>
 
 ##### peaks stage
-13. <code>macs2 callpeak -t .../align/Name\_filter\_sorted.bam MACS2settings --outdir .../peaks -n Name</code>
+18. <code>macs2 callpeak -t .../align/Name\_filter\_sorted.bam MACS2settings --outdir .../peaks -n Name</code>\
+or <code>java -jar /proj/phanstiel\_lab/software/HMMRATAC/HMMRATAC\_V1.2.10_exe.jar -b .../aligned/Name_filter\_sorted.bam -i .../aligned/Name\_filter\_sorted.bam.bai -g /proj/phanstiel\_lab/software/resources/hg19\_chromSizes.txt  -o Name\_HMMR;
+mv ./Name\_HMMR* .../peaks/ </code>
 
 ##### signal stage, signalout set to bedgraph
-14. <code>bedtools genomecov -bga -ibam .../align/Name\_sorted.bam > .../signal/Name.bedgraph</code>
+19. <code>bedtools genomecov -bga -ibam .../align/Name\_sorted.bam > .../signal/Name.bedgraph</code>
 
 ##### signal stage, signalout set to bigwig
-15. <code>bamCoverage -b .../align/Name\_sorted.bam -o .../signal/Name.bw</code>
-16. <code>bamCoverage --filterRNAstrand forward -b .../align/Name\_sorted.bam -o .../signal/Name_fwd.bw</code>
-17. <code>bamCoverage --filterRNAstrand reverse -b .../align/Name\_sorted.bam -o .../signal/Name_rev.bw</code>
+20. <code>bamCoverage -b .../align/Name\_sorted.bam -o .../signal/Name.bw</code>
 
 #### MERGE SCRIPTS
 These commands are run for every merged sample in <code>.../config/mergeList</code>, as deteremined by <code>--stage merge</code> and <code>--mergeby</code>.
 
 ##### merge stage
-1. <code>samtools merge .../align/MERGE\_MergeName.bam .../align/Name1\_sorted.bam .../align/Name2\_sorted.bam</code>
+1. <code>samtools merge .../align/MERGE\_MergeName.bam .../align/Name1\_filter\_sorted.bam .../align/Name2\_filter\_sorted.bam</code>
 2. <code>samtools index .../align/MERGE\_MergeName.bam</code>
 
 ##### peaks stage
-3. <code>macs2 callpeak -t .../align/MERGE\_MergeName.bam MACS2settings --outdir .../peaks -n MergeName</code>
+3. <code>macs2 callpeak -t .../align/MERGE\_MergeName.bam MACS2settings --outdir .../peaks -n MergeName</code>\
+or <code>java -jar /proj/phanstiel\_lab/software/HMMRATAC/HMMRATAC\_V1.2.10_exe.jar -b .../aligned/MergeName\_filter\_sorted.bam -i .../aligned/MergeName\_filter\_sorted.bam.bai -g /proj/phanstiel\_lab/software/resources/hg19\_chromSizes.txt  -o MergeName\_HMMR;
+mv ./MergeName\_HMMR* .../peaks/ </code>
 
 ##### signal stage, signalout set to bedgraph
 4. <code>bedtools genomecov -bga -ibam .../align/MERGE\_MergeName.bam > .../signal/MERGE\_MergeName.bedgraph</code>
@@ -455,9 +478,14 @@ Run only one time for the entire samplesheet
 4. <code>rm .../QC/\*fastqc.html</code>
 5. <code>rm .../fastq/\*fastq\_trimming\_report.txt</code>
 
-##### peak stage
-6. <code>cat .../peaks/\*.narrowPeak \| awk '{ OFS="\\t"};{ print $1, $2, $3, $4 }' \| sort -k1,1 -k2,2n \| bedtools merge > .../peaks/NAME\_peakMerge.narrowPeak</code>
-7. <code>bedtools multicov -bams .../align/\*\_filter\_sorted.bam -bed .../peaks/NAME\_peakMerge.narrowPeak > .../peaks/NAME\_counts.tsv</code>
+##### peaks stage
+6. <code>cat .../peaks/\*.narrowPeak \| awk '{ OFS="\\t"};{ print $1, $2, $3, $4 }' \| sort -k1,1 -k2,2n \| bedtools merge > .../peaks/NAME\_{HMMR/MACS}\_peakMergeTEMP.bed</code>
+7. <code>grep -ve "-1" .../peaks/NAME\_{HMMR/MACS}\_peakMergeTEMP.bed > .../peaks/NAME\_{HMMR/MACS}\_peakMerge.bed</code>
+8. <code>rm .../peaks/NAME\_{HMMR/MACS}\_peakMergeTEMP.bed</code>
+9. <code>printf "chr\tstart\tstop\t" > .../peaks/NAME\_{HMMR/MACS}\_counts.tsv</code>
+10. <code>for f in .../align/\*filter\_sorted.bam; do NAME=$(basename $f \_filter\_sorted.bam); printf '%s\t' "$NAME" >> .../peaks/NAME\_{HMMR/MACS}\_counts.tsv; done</code>
+11. <code>printf "\n" > .../peaks/NAME\_{HMMR/MACS}\_counts.tsv</code>
+12. <code>bedtools multicov -bams .../align/\*\_filter\_sorted.bam -bed .../peaks/NAME\_{HMMR/MACS}\_peakMerge.bed > .../peaks/NAME\_{HMMR/MACS}\_counts.tsv</code>
 
 [Back to Top](#table-of-contents)
 
@@ -473,6 +501,12 @@ There are a lot of issues and frustrations with RNApipe in its current form. I'm
 ***Updated 07/04/2020***
 - ~~Add SLURM job IDs to log files~~\
 ***Updated 07/04/2020***
+- ~~**MAJOR:** Add HMMRATAC capability to ATACpipe~~\
+***Updated 07/09/2020***
+- ~~Add headers to counts files for ATAC/ChIP pipe~~\
+***Updated 08/22/2020***
+- ~~**MAJOR:** Add mitochondrial read filter step to ATACpipe~~\
+***Updated 08/22/2020***
 - Allow for running on truly manual samplesheets (without all the standard columns required)
 - Probably can just get rid of the bedgraph option for signal tracks? Maybe not, as they are more human readable. If you want to plot things in R or IGV though, bigwig is the way to go 100% !
 - Reconsider memory/node requirements? Maybe we should have a "SLURM Parameters" section for tweaking based on size (i.e. MiniSeq vs deep sequencing). Right now EVERYTHING asks for 16g, 8 nodes.
