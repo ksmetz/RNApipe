@@ -1,6 +1,6 @@
 # RNApipe
 Katie Metz Reed\
-*Last Updated: 08-25-2020*
+*Last Updated: 09-07-2020*
 
 Phanstiel lab (temporary?) pipeline for paired-end RNAseq data.
 
@@ -509,7 +509,7 @@ There are a lot of issues and frustrations with RNApipe in its current form. I'm
 ***Updated 08/22/2020***
 - Allow for running on truly manual samplesheets (without all the standard columns required)
 - Probably can just get rid of the bedgraph option for signal tracks? Maybe not, as they are more human readable. If you want to plot things in R or IGV though, bigwig is the way to go 100% !
-- Reconsider memory/node requirements? Maybe we should have a "SLURM Parameters" section for tweaking based on size (i.e. MiniSeq vs deep sequencing). Right now EVERYTHING asks for 16g, 8 nodes.
+- Reconsider memory/node requirements? Maybe we should have a "SLURM Parameters" section for tweaking based on size (i.e. MiniSeq vs deep sequencing). Or just a <code>--mini</code> or <code>--big</code> flag for alternative settings. Right now EVERYTHING asks for 16g, 8 nodes. 
 - Consider making MERGE jobs wait only on their respective samples, rather than waiting for all CORE jobs to finish
 
 

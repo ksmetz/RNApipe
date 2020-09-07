@@ -1057,7 +1057,7 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
                 '#SBATCH -J MERGE_' + mergeName + '\n' +
                 '#SBATCH -n 8\n' +
                 '#SBATCH -N 1\n' +
-                '#SBATCH --mem=48g \n' +
+                '#SBATCH --mem=96g \n' +
                 '#SBATCH -t 5760\n' +
                 '#SBATCH -o ' + directories['debug'] + '/merge_' + mergeName + '_' + stamp + '-%j.log.out\n' + 
                 '#SBATCH -e ' + directories['debug'] + '/merge_' + mergeName + '_' + stamp + '-%j.log.err\n' +
