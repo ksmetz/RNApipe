@@ -366,7 +366,7 @@ if os.path.isfile(configFile) == False and MANUAL is not None:
     parser.error("No config file found in manually defined config location " + configFile)
 
 # Read in master config file
-config = pd.read_table(configFile)
+config = pd.read_table(configFile, dtype=str)
 
 
 
