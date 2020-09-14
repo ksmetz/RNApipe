@@ -1170,21 +1170,6 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
 
                     file.write('bamCoverage -b ' + directories['align'] + '/MERGE_' + mergeName + '.bam -o ' + directories['signal'] + '/MERGE_' + mergeName + '.bw\n')
 
-            if TEMP == False:
-                file.write(
-                    '\n\n' +
-                    '# REMOVING TEMP FILES\n' +
-                    '# ===================\n' +
-                    '\n' +
-                    'printf "Deleting temp merged BAM files...\\n"\n' +
-                    'printf "=================================\\n"\n' + 
-                    '\n' +
-                    'date\n' +
-                    'rm ' + directories['align'] + '/MERGE_' + mergeName + '.bam\n' +
-                    'rm ' + directories['align'] + '/MERGE_' + mergeName + '.bam.bai\n')
-
-            file.close()
-
             mergeCmd = 'sbatch --dependency=afterok:' + coreJobs + ' ' + script
             print "Submitting job MERGE %s with command: %s" % (mergeName, mergeCmd)
 
