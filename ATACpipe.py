@@ -1294,14 +1294,14 @@ if "QC" in STAGE or "peaks" in STAGE:
             file.write('printf "Peak counts already summarized"\n')
         elif "MACS2" in PEAKCALLER:
           file.write(
-            '''printf "chr\tstart\tstop\t" > ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_counts.tsv\n''' +
-            '''for f in ''' + directories['align'] + '''/*filter_sorted.bam; do NAME=$(basename $f _filter_sorted.bam); printf '%s\t' "$NAME" >> ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_counts.tsv; done \n''' +
+            '''printf "chr\tstart\tstop" > ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_counts.tsv\n''' +
+            '''for f in ''' + directories['align'] + '''/*filter_sorted.bam; do NAME=$(basename $f _filter_sorted.bam); printf '\t%s' "$NAME" >> ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_counts.tsv; done \n''' +
             '''printf '\n' >> ''' + directories['peaks'] + '''/''' + NAME + '''_MACS2_counts.tsv\n''' +
             'bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_MACS2_peakMerge.bed' + ' >> ' + directories['peaks'] + '/' + NAME + '_MACS2_counts.tsv \n')
         elif "HMMR" in PEAKCALLER:
           file.write(
-            '''printf "chr\tstart\tstop\t" > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_counts.tsv\n''' +
-            '''for f in ''' + directories['align'] + '''/*filter_sorted.bam; do NAME=$(basename $f _filter_sorted.bam); printf '%s\t' "$NAME" >> ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_counts.tsv; done \n''' +
+            '''printf "chr\tstart\tstop" > ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_counts.tsv\n''' +
+            '''for f in ''' + directories['align'] + '''/*filter_sorted.bam; do NAME=$(basename $f _filter_sorted.bam); printf '\t%s' "$NAME" >> ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_counts.tsv; done \n''' +
             '''printf '\n' >> ''' + directories['peaks'] + '''/''' + NAME + '''_HMMR_counts.tsv\n''' +
             'bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_HMMR_peakMerge.bed' + ' >> ' + directories['peaks'] + '/' + NAME + '_HMMR_counts.tsv \n')
 

@@ -1158,10 +1158,10 @@ if "QC" in STAGE or "peaks" in STAGE:
                        '# COMMAND USED: \n#')
 
         file.write(
-            '''printf "chr\tstart\tstop\t" > ''' + directories['peaks'] + '''/''' + NAME + '''_counts.tsv\n''' +
-            '''for f in ''' + directories['align'] + '''/*filter_sorted.bam; do NAME=$(basename $f _filter_sorted.bam); printf '%s\t' "$NAME" >> ''' + directories['peaks'] + '''/''' + NAME + '''_counts.tsv; done \n''' +
+            '''printf "chr\tstart\tstop" > ''' + directories['peaks'] + '''/''' + NAME + '''_counts.tsv\n''' +
+            '''for f in ''' + directories['align'] + '''/*filter_sorted.bam; do NAME=$(basename $f _filter_sorted.bam); printf '\t%s' "$NAME" >> ''' + directories['peaks'] + '''/''' + NAME + '''_counts.tsv; done \n''' +
             '''printf '\n' >> ''' + directories['peaks'] + '''/''' + NAME + '''_counts.tsv\n''' +
-            'bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_peakMerge.bed' + ' > ' + directories['peaks'] + '/' + NAME + '_counts.tsv \n')
+            'bedtools multicov -bams ' + directories['align'] + '/*_filter_sorted.bam -bed ' + directories['peaks'] + '/' + NAME + '_peakMerge.bed' + ' >> ' + directories['peaks'] + '/' + NAME + '_counts.tsv \n')
 
     file.close()
 
