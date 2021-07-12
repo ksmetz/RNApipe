@@ -75,7 +75,7 @@ def namer(columnNamesSingle, columnNamesCombine):
 # version numbers for different programs used
 FASTQCvers  = "0.11.5"
 TrimVers    = "0.4.3"
-SalmonVers  = "0.8.2"
+SalmonVers  = "1.4.0"
 rVers       = "3.3.1"
 multiQCvers = "1.5" 
 majiqVers   = "1.1.7"
