@@ -776,7 +776,7 @@ for n in range(len(config)):
         '#SBATCH -J CORE_' + nName + '\n' +
         '#SBATCH -n 8\n' +
         '#SBATCH -N 1\n' +
-        '#SBATCH --mem=16g \n' +
+        '#SBATCH --mem=32g \n' +
         '#SBATCH -t 5760\n' +
         '#SBATCH -o ' + directories['debug'] + '/core_' + nName + '_' + stamp + '-%j.log.out\n' + 
         '#SBATCH -e ' + directories['debug'] + '/core_' + nName + '_' + stamp + '-%j.log.err\n' +
@@ -1006,7 +1006,7 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
                 '#SBATCH -J MERGE_' + mergeName + '\n' +
                 '#SBATCH -n 8\n' +
                 '#SBATCH -N 1\n' +
-                '#SBATCH --mem=16g \n' +
+                '#SBATCH --mem=32g \n' +
                 '#SBATCH -t 5760\n' +
                 '#SBATCH -o ' + directories['debug'] + '/merge_' + mergeName + '_' + stamp + '-%j.log.out\n' + 
                 '#SBATCH -e ' + directories['debug'] + '/merge_' + mergeName + '_' + stamp + '-%j.log.err\n' +
@@ -1131,7 +1131,7 @@ if "QC" in STAGE or "quant" in STAGE:
         '#SBATCH -J FINAL_' + NAME + '\n' +
         '#SBATCH -n 8\n' +
         '#SBATCH -N 1\n' +
-        '#SBATCH --mem=16g \n' +
+        '#SBATCH --mem=32g \n' +
         '#SBATCH -t 5760\n' +
         '#SBATCH -o ' + directories['debug'] + '/final_' + NAME + '_' + stamp + '-%j.log.out\n' + 
         '#SBATCH -e ' + directories['debug'] + '/final_' + NAME + '_' + stamp + '-%j.log.err\n' +
