@@ -197,6 +197,9 @@ runGroup.add_option("--peakcaller", "--PEAKCALLER", "--peakCaller", action = "st
 # Rerun: option to overwrite existing files, rather than skip the steps that lead to them
 runGroup.add_option("--rerun", "--RERUN", action = "store", type = "string", dest = "rerun", 
                   help = "Toggle (T/F) whether to overwrite existing files in output directory. (default: T)",default="T")
+# Mem: Select how much memory to run jobs with (default 32g)
+runGroup.add_option("--mem", "--MEM", action = "store", type = "string", dest = "mem", 
+                  help = "Memory for all SLURM jobs. (default=32g)",default="32g")
 
 parser.add_option_group(runGroup)
 
@@ -275,6 +278,7 @@ SIGOUT = optionLister(options.sigout)
 PEAKCALLER = optionLister(options.peakcaller)
 MERGE = optionLister(options.merge)
 RERUN = options.rerun
+MEM = options.mem
 
 # Command parameters
 BWAIDX = options.bwaindex
@@ -768,7 +772,7 @@ for n in range(len(config)):
         '#SBATCH -J CORE_' + nName + '\n' +
         '#SBATCH -n 8\n' +
         '#SBATCH -N 1\n' +
-        '#SBATCH --mem=48g \n' +
+        '#SBATCH --mem=' + MEM + '\n' +
         '#SBATCH -t 5760\n' +
         '#SBATCH -o ' + directories['debug'] + '/core_' + nName + '_' + stamp + '-%j.log.out\n' + 
         '#SBATCH -e ' + directories['debug'] + '/core_' + nName + '_' + stamp + '-%j.log.err\n' +
@@ -1057,7 +1061,7 @@ if "merge" in STAGE and mergeDF.shape[0] > 1:
                 '#SBATCH -J MERGE_' + mergeName + '\n' +
                 '#SBATCH -n 8\n' +
                 '#SBATCH -N 1\n' +
-                '#SBATCH --mem=96g \n' +
+                '#SBATCH --mem=' + MEM + '\n' +
                 '#SBATCH -t 5760\n' +
                 '#SBATCH -o ' + directories['debug'] + '/merge_' + mergeName + '_' + stamp + '-%j.log.out\n' + 
                 '#SBATCH -e ' + directories['debug'] + '/merge_' + mergeName + '_' + stamp + '-%j.log.err\n' +
@@ -1201,7 +1205,7 @@ if "QC" in STAGE or "peaks" in STAGE:
         '#SBATCH -J FINAL_' + NAME + '\n' +
         '#SBATCH -n 8\n' +
         '#SBATCH -N 1\n' +
-        '#SBATCH --mem=16g \n' +
+        '#SBATCH --mem=' + MEM + '\n' +
         '#SBATCH -t 5760\n' +
         '#SBATCH -o ' + directories['debug'] + '/final_' + NAME + '_' + stamp + '-%j.log.out\n' + 
         '#SBATCH -e ' + directories['debug'] + '/final_' + NAME + '_' + stamp + '-%j.log.err\n' +
